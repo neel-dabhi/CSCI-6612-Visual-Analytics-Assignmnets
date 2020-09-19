@@ -36,6 +36,7 @@ class DistanceMetric(Enum):
 # All methods should be dataset-independent, using only the methods done in the assignment
 # so far and pandas/numpy/sklearn for the operations
 ##############################################
+
 def fix_numeric_wrong_values(df: pd.DataFrame,
                              column: str,
                              must_be_rule: WrongValueNumericRule,
@@ -50,7 +51,22 @@ def fix_numeric_wrong_values(df: pd.DataFrame,
     :param must_be_rule_optional_parameter: optional parameter for the "greater than" or "less than" cases
     :return: The dataset with fixed column
     """
-    pass
+
+    if must_be_rule.MUST_BE_GREATER_THAN:
+        df.loc[df[column] > must_be_rule_optional_parameter, column] = np.nan
+        return df
+
+    if must_be_rule.MUST_BE_LESS_THAN:
+        df.loc[df[column] < must_be_rule_optional_parameter, column] = np.nan
+        return df
+
+    if must_be_rule.MUST_BE_NEGATIVE:
+        df.loc[df[column] < 0, column] = np.nan
+        return df
+
+    if must_be_rule.MUST_BE_POSITIVE:
+        df.loc[df[column] > 0, column] = np.nan
+        return df
 
 
 def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -66,7 +82,10 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :param column: the column to be investigated and fixed
     :return: The dataset with fixed column
     """
-    pass
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    print(IQR)
 
 
 def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -100,7 +119,8 @@ def standardize_column(df_column: pd.Series) -> pd.Series:
     pass
 
 
-def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series, distance_metric: DistanceMetric) -> pd.Series:
+def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
+                               distance_metric: DistanceMetric) -> pd.Series:
     """
     This method should calculate the distance between two numeric columns
     :param df_column_1: Dataset's column
@@ -123,7 +143,7 @@ def calculate_binary_distance(df_column_1: pd.Series, df_column_2: pd.Series) ->
 
 
 if __name__ == "__main__":
-    df = pd.DataFrame({'a':[1,2,3,None], 'b': [True, True, False, None], 'c': ['one', 'two', np.nan, None]})
+    df = pd.DataFrame({'a': [1, 2, 3, None], 'b': [True, True, False, None], 'c': ['one', 'two', np.nan, None]})
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_LESS_THAN, 2) is not None
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_GREATER_THAN, 2) is not None
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_POSITIVE, 2) is not None
