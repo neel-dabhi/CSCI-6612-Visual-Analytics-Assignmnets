@@ -30,21 +30,18 @@ def pandas_profile(df: pd.DataFrame, result_html: str = 'report.html'):
 def get_column_max(df: pd.DataFrame, column_name: str) -> float:
     col = df[column_name]
     max_num = col.max()
-    print("Max: ", max_num)
     return max_num
 
 
 def get_column_min(df: pd.DataFrame, column_name: str) -> float:
     col = df[column_name]
     min_num = col.min()
-    print("Min: ", min_num)
     return min_num
 
 
 def get_column_mean(df: pd.DataFrame, column_name: str) -> float:
     col = df[column_name]
     mean_num = col.mean()
-    print("Mean: ", mean_num)
     return mean_num
 
 
@@ -54,7 +51,6 @@ def get_column_count_of_nan(df: pd.DataFrame, column_name: str) -> float:
     """
     col = df[column_name]
     nan_num = len(col[col.isna()])
-    print("Number of NaN val: ", nan_num)
     return nan_num
 
 
@@ -63,14 +59,13 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
-    print("Numeric cols: ",df._get_numeric_data().columns.tolist())
+    # print("Numeric cols: ",df._get_numeric_data().columns.tolist())
     return df._get_numeric_data().columns.tolist()
 
 
 def get_binary_columns(df: pd.DataFrame) -> List[str]:
-    cols = df.apply(lambda col: True if len(col.unique()) == 2 else False)
+    cols = df.apply(lambda col: True if len(col.dropna().unique()) == 2 else False)
     cols = cols[cols == True]
-    print("Binary cols: ", cols)
     return cols.index
 
 
@@ -84,7 +79,6 @@ def get_correlation_between_columns(df: pd.DataFrame, col1: str, col2: str) -> f
     """
     numerator = np.sum((df[col1] - df[col1].mean()) * (df[col2] - df[col2].mean()))
     denominator = np.sqrt(np.sum((df[col1] - df[col1].mean()) ** 2)) * np.sqrt(np.sum((df[col2] - df[col2].mean()) ** 2))
-    print("Pearson Correlation: ", numerator/denominator)
     return numerator / denominator
 
 

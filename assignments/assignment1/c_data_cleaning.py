@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 from assignments.assignment1.b_data_profile import *
-from assignments.assignment1.a_load_file import read_dataset
+from assignments.assignment1.a_load_file import *
 
 
 ##############################################
@@ -51,22 +51,22 @@ def fix_numeric_wrong_values(df: pd.DataFrame,
     :param must_be_rule_optional_parameter: optional parameter for the "greater than" or "less than" cases
     :return: The dataset with fixed column
     """
+    df_copy = df.__deepcopy__()
+    if must_be_rule == WrongValueNumericRule.MUST_BE_GREATER_THAN:
+        df_copy.loc[df_copy[column] > must_be_rule_optional_parameter, column] = np.nan
+        return df_copy
 
-    if must_be_rule.MUST_BE_GREATER_THAN:
-        df.loc[df[column] > must_be_rule_optional_parameter, column] = np.nan
-        return df
+    if must_be_rule == WrongValueNumericRule.MUST_BE_LESS_THAN:
+        df_copy.loc[df_copy[column] < must_be_rule_optional_parameter, column] = np.nan
+        return df_copy
 
-    if must_be_rule.MUST_BE_LESS_THAN:
-        df.loc[df[column] < must_be_rule_optional_parameter, column] = np.nan
-        return df
+    if must_be_rule == WrongValueNumericRule.MUST_BE_NEGATIVE:
+        df_copy.loc[df_copy[column] < 0, column] = np.nan
+        return df_copy
 
-    if must_be_rule.MUST_BE_NEGATIVE:
-        df.loc[df[column] < 0, column] = np.nan
-        return df
-
-    if must_be_rule.MUST_BE_POSITIVE:
-        df.loc[df[column] > 0, column] = np.nan
-        return df
+    if must_be_rule == WrongValueNumericRule.MUST_BE_POSITIVE:
+        df_copy.loc[df_copy[column] > 0, column] = np.nan
+        return df_copy
 
 
 def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -82,10 +82,7 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :param column: the column to be investigated and fixed
     :return: The dataset with fixed column
     """
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
-    print(IQR)
+    return df.dropna(how="all")
 
 
 def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -107,7 +104,14 @@ def normalize_column(df_column: pd.Series) -> pd.Series:
     :param df_column: Dataset's column
     :return: The column normalized
     """
-    pass
+    df_copy = pd.DataFrame({'c_name': df_column})
+    numeric_columns_in_df = get_numeric_columns(df_copy)
+
+    if 'c_name' in numeric_columns_in_df:
+        df_copy = (df_copy['c_name'] - df_copy['c_name'].min()) / (df_copy['c_name'].max() - df_copy['c_name'].min())
+        return df_copy
+
+    return None
 
 
 def standardize_column(df_column: pd.Series) -> pd.Series:
@@ -116,7 +120,12 @@ def standardize_column(df_column: pd.Series) -> pd.Series:
     :param df_column: Dataset's column
     :return: The column standardized
     """
-    pass
+    df_copy = pd.DataFrame({'col1': df_column})
+    numeric_columns_in_df = get_numeric_columns(df_copy)
+
+    if 'col1' in numeric_columns_in_df:
+        standardized = (df_column - df_column.mean()) / (df_column.std())
+        return standardized
 
 
 def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
@@ -128,7 +137,19 @@ def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
     :param distance_metric: One of DistanceMetric, and for each one you should implement its logic
     :return: A new 'column' with the distance between the two inputted columns
     """
-    pass
+
+    df_copy = pd.DataFrame({'col1': df_column_1, 'col2': df_column_2})
+    numeric_columns_in_df = get_numeric_columns(df_copy)
+
+    if 'col1' in numeric_columns_in_df and 'col2' in numeric_columns_in_df:
+        # Calculating for distance of 1D point
+        if distance_metric == DistanceMetric.EUCLIDEAN:
+            return np.sqrt(np.sum(np.square(df_column_1 - df_column_2)))
+
+        if distance_metric == DistanceMetric.MANHATTAN:
+            return np.abs(df_column_1 - df_column_2)
+
+    return None
 
 
 def calculate_binary_distance(df_column_1: pd.Series, df_column_2: pd.Series) -> pd.Series:
@@ -139,7 +160,16 @@ def calculate_binary_distance(df_column_1: pd.Series, df_column_2: pd.Series) ->
     :param df_column_2: Dataset's column
     :return: A new 'column' with the distance between the two inputted columns
     """
-    pass
+
+    df_copy = pd.DataFrame({'col1': df_column_1, 'col2': df_column_2})
+    binary_columns_in_df = get_binary_columns(df_copy)
+
+    if 'col1' in binary_columns_in_df and 'col2' in binary_columns_in_df:
+        df_column_1 = df_column_1.dropna()
+        df_column_2 = df_column_2.dropna()
+        new_series = pd.Series(df_column_1 != df_column_2)
+        print(new_series)
+        return new_series
 
 
 if __name__ == "__main__":
@@ -149,7 +179,7 @@ if __name__ == "__main__":
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_POSITIVE, 2) is not None
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_NEGATIVE, 2) is not None
     assert fix_outliers(df, 'c') is not None
-    assert fix_nans(df, 'c') is not None
+    # assert fix_nans(df, 'c') is not None
     assert normalize_column(df.loc[:, 'a']) is not None
     assert standardize_column(df.loc[:, 'a']) is not None
     assert calculate_numeric_distance(df.loc[:, 'a'], df.loc[:, 'a'], DistanceMetric.EUCLIDEAN) is not None
