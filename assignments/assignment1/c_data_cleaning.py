@@ -82,7 +82,25 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :param column: the column to be investigated and fixed
     :return: The dataset with fixed column
     """
-    return df.dropna(how="all")
+
+    # fix nan first
+    df = fix_nans(df, column)
+
+    # if the col is numeric go deeper to fix outliers
+    df_copy = pd.DataFrame({'c_name': df[column]})
+    numeric_columns_in_df = get_numeric_columns(df_copy)
+
+    if 'c_name' in numeric_columns_in_df:
+        df.dropna(how='all')
+        # Removing outliers using IQR
+        Q1 = df[column].quantile(0.25, interpolation='nearest')
+        Q3 = df[column].quantile(0.75, interpolation='nearest')
+        IQR = Q3 - Q1
+        lower_quartile = Q1 - (1.5 * IQR)
+        upper_quartile = Q3 + (1.5 * IQR)
+        df = df[(df[column] > lower_quartile) and (df[column] < upper_quartile)]
+
+    return df
 
 
 def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -95,7 +113,28 @@ def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :param column: the column to be investigated and fixed
     :return: The fixed dataset
     """
-    pass
+    # removing rows where all the values are nan
+    df.dropna(how='all', inplace=True)
+
+    """
+    check if col is of numeric, then try to replace nan with mean
+    (that is fixing outlier/nan with replacing it with mean)
+    """
+    df_copy = pd.DataFrame({'c_name': df[column]})
+    numeric_columns_in_df = get_numeric_columns(df_copy)
+
+    if 'c_name' in numeric_columns_in_df:
+        df[column] = df[column].fillna(df[column].mean())
+        print(df)
+        return df
+
+    """
+    if the given col is of str or any other type, I am removing the row even if it has one nan
+    we can defiantly replace it with the string that is frequently occurring.
+    As we didnt have the context of domain i felt that removing the whole row makes sense
+    """
+    df.dropna(how='any', inplace=True)
+    return df
 
 
 def normalize_column(df_column: pd.Series) -> pd.Series:
@@ -168,7 +207,6 @@ def calculate_binary_distance(df_column_1: pd.Series, df_column_2: pd.Series) ->
         df_column_1 = df_column_1.dropna()
         df_column_2 = df_column_2.dropna()
         new_series = pd.Series(df_column_1 != df_column_2)
-        print(new_series)
         return new_series
 
 
@@ -179,7 +217,7 @@ if __name__ == "__main__":
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_POSITIVE, 2) is not None
     assert fix_numeric_wrong_values(df, 'a', WrongValueNumericRule.MUST_BE_NEGATIVE, 2) is not None
     assert fix_outliers(df, 'c') is not None
-    # assert fix_nans(df, 'c') is not None
+    assert fix_nans(df, 'c') is not None
     assert normalize_column(df.loc[:, 'a']) is not None
     assert standardize_column(df.loc[:, 'a']) is not None
     assert calculate_numeric_distance(df.loc[:, 'a'], df.loc[:, 'a'], DistanceMetric.EUCLIDEAN) is not None
