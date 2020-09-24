@@ -55,7 +55,9 @@ def get_column_count_of_nan(df: pd.DataFrame, column_name: str) -> float:
 
 
 def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float:
-    return 1.0
+    cols_duplicate = df.duplicated(subset=[column_name])
+    cols_duplicate = cols_duplicate[cols_duplicate == True]
+    return cols_duplicate.sum()
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
@@ -64,13 +66,14 @@ def get_numeric_columns(df: pd.DataFrame) -> List[str]:
 
 
 def get_binary_columns(df: pd.DataFrame) -> List[str]:
+
     cols = df.apply(lambda col: True if len(col.dropna().unique()) == 2 else False)
     cols = cols[cols == True]
     return cols.index
 
 
 def get_text_categorical_columns(df: pd.DataFrame) -> List[str]:
-    return ["s"]
+    return df.select_dtypes(exclude=['int', 'float']).columns
 
 
 def get_correlation_between_columns(df: pd.DataFrame, col1: str, col2: str) -> float:

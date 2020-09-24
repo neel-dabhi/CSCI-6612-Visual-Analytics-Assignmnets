@@ -100,6 +100,8 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
         upper_quartile = Q3 + (1.5 * IQR)
         df = df[(df[column] > lower_quartile) and (df[column] < upper_quartile)]
 
+    # handle for  categorical, date time, binary
+
     return df
 
 
@@ -125,8 +127,9 @@ def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
 
     if 'c_name' in numeric_columns_in_df:
         df[column] = df[column].fillna(df[column].mean())
-        print(df)
         return df
+
+    # handle for  categorical, date time, binary
 
     """
     if the given col is of str or any other type, I am removing the row even if it has one nan
@@ -143,27 +146,22 @@ def normalize_column(df_column: pd.Series) -> pd.Series:
     :param df_column: Dataset's column
     :return: The column normalized
     """
-    df_copy = pd.DataFrame({'c_name': df_column})
-    numeric_columns_in_df = get_numeric_columns(df_copy)
 
-    if 'c_name' in numeric_columns_in_df:
-        df_copy = (df_copy['c_name'] - df_copy['c_name'].min()) / (df_copy['c_name'].max() - df_copy['c_name'].min())
-        return df_copy
+    if df_column.dtype == np.number:
+        df_column = (df_column - df_column.min()) / (df_column.max() - df_column.min())
+        return df_column
 
     return None
 
 
 def standardize_column(df_column: pd.Series) -> pd.Series:
     """
-    This method should recalculate all values of a numeric column and standardize it between -1 and 1 with its average at 0.
-    :param df_column: Dataset's column
-    :return: The column standardized
+    This method should recalculate all values of a numeric column and standardize it between -1 and 1 with its
+    average at 0. :param df_column: Dataset's column :return: The column standardized
     """
-    df_copy = pd.DataFrame({'col1': df_column})
-    numeric_columns_in_df = get_numeric_columns(df_copy)
-
-    if 'col1' in numeric_columns_in_df:
-        standardized = (df_column - df_column.mean()) / (df_column.std())
+    # df_new = read_dataset(Path('..', '..', 'iris.csv'))
+    if df_column.dtype == np.number:
+        standardized = ((df_column - df_column.min()) / (df_column.max() - df_column.min())) * (-2) + 1
         return standardized
 
 
@@ -176,16 +174,21 @@ def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
     :param distance_metric: One of DistanceMetric, and for each one you should implement its logic
     :return: A new 'column' with the distance between the two inputted columns
     """
+    df = read_dataset(Path('..', '..', 'iris.csv'))
 
+    df_column_1 = df['sepal_length']
+    df_column_2 = df['sepal_width']
     df_copy = pd.DataFrame({'col1': df_column_1, 'col2': df_column_2})
     numeric_columns_in_df = get_numeric_columns(df_copy)
 
     if 'col1' in numeric_columns_in_df and 'col2' in numeric_columns_in_df:
         # Calculating for distance of 1D point
         if distance_metric == DistanceMetric.EUCLIDEAN:
-            return np.sqrt(np.sum(np.square(df_column_1 - df_column_2)))
+            # EXPLAIN
+            return np.abs(np.sqrt(np.sum(np.square(df_column_1 - df_column_2))))
 
         if distance_metric == DistanceMetric.MANHATTAN:
+            # EXPLAIN
             return np.abs(df_column_1 - df_column_2)
 
     return None
@@ -208,6 +211,8 @@ def calculate_binary_distance(df_column_1: pd.Series, df_column_2: pd.Series) ->
         df_column_2 = df_column_2.dropna()
         new_series = pd.Series(df_column_1 != df_column_2)
         return new_series
+
+    return np.nan
 
 
 if __name__ == "__main__":
