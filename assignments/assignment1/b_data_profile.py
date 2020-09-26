@@ -61,12 +61,10 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
-    # print("Numeric cols: ",df._get_numeric_data().columns.tolist())
     return df._get_numeric_data().columns.tolist()
 
 
 def get_binary_columns(df: pd.DataFrame) -> List[str]:
-
     cols = df.apply(lambda col: True if len(col.dropna().unique()) == 2 else False)
     cols = cols[cols == True]
     return cols.index
@@ -87,7 +85,7 @@ def get_correlation_between_columns(df: pd.DataFrame, col1: str, col2: str) -> f
 
 if __name__ == "__main__":
     df = read_dataset(Path('..', '..', 'iris.csv'))
-    # a = pandas_profile(df)
+    a = pandas_profile(df)
     assert get_column_max(df, df.columns[0]) is not None
     assert get_column_min(df, df.columns[0]) is not None
     assert get_column_mean(df, df.columns[0]) is not None

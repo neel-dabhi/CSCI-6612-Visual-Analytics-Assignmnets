@@ -83,9 +83,6 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :return: The dataset with fixed column
     """
 
-    # fix nan first
-    df = fix_nans(df, column)
-
     # if the col is numeric go deeper to fix outliers
     df_copy = pd.DataFrame({'c_name': df[column]})
     numeric_columns_in_df = get_numeric_columns(df_copy)
@@ -116,28 +113,40 @@ def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :return: The fixed dataset
     """
     # removing rows where all the values are nan
-    df.dropna(how='all', inplace=True)
+    df_new = df.copy()
+    df_new.dropna(how='all', inplace=True)
 
     """
     check if col is of numeric, then try to replace nan with mean
     (that is fixing outlier/nan with replacing it with mean)
     """
-    df_copy = pd.DataFrame({'c_name': df[column]})
+    df_copy = pd.DataFrame({'c_name': df_new[column]})
     numeric_columns_in_df = get_numeric_columns(df_copy)
 
-    if 'c_name' in numeric_columns_in_df:
-        df[column] = df[column].fillna(df[column].mean())
-        return df
+    if df_new[column] in numeric_columns_in_df:
+        df_new[column] = df_new[column].fillna(df_new[column].mean())
+        return df_new
 
     # handle for  categorical, date time, binary
+    if 'c_name' in get_binary_columns(df_new):
+        df_new[column] = df_new[column].fillna(method='ffill')
+        return df_new
+
+    if df_new[column].dtype == np.datetime64:
+        df_new[column] = df_new[column].fillna(0)
+        return df_new
+
+    if column in get_text_categorical_columns(df_new):
+        df_new[column] = df_new[column].fillna(df[column].mode()[0])
+        return df_new
 
     """
     if the given col is of str or any other type, I am removing the row even if it has one nan
     we can defiantly replace it with the string that is frequently occurring.
     As we didnt have the context of domain i felt that removing the whole row makes sense
     """
-    df.dropna(how='any', inplace=True)
-    return df
+
+    return df_new
 
 
 def normalize_column(df_column: pd.Series) -> pd.Series:
@@ -159,10 +168,12 @@ def standardize_column(df_column: pd.Series) -> pd.Series:
     This method should recalculate all values of a numeric column and standardize it between -1 and 1 with its
     average at 0. :param df_column: Dataset's column :return: The column standardized
     """
-    # df_new = read_dataset(Path('..', '..', 'iris.csv'))
+
     if df_column.dtype == np.number:
         standardized = ((df_column - df_column.min()) / (df_column.max() - df_column.min())) * (-2) + 1
         return standardized
+
+    return None
 
 
 def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
@@ -174,10 +185,7 @@ def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
     :param distance_metric: One of DistanceMetric, and for each one you should implement its logic
     :return: A new 'column' with the distance between the two inputted columns
     """
-    df = read_dataset(Path('..', '..', 'iris.csv'))
 
-    df_column_1 = df['sepal_length']
-    df_column_2 = df['sepal_width']
     df_copy = pd.DataFrame({'col1': df_column_1, 'col2': df_column_2})
     numeric_columns_in_df = get_numeric_columns(df_copy)
 
