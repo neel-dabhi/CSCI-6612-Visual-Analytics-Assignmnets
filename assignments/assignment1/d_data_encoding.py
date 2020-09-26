@@ -28,7 +28,8 @@ def generate_label_encoder(df_column: pd.Series) -> LabelEncoder:
     :param df_column: Dataset's column
     :return: A label encoder of the column
     """
-    pass
+
+    return LabelEncoder().fit(df_column)
 
 
 def generate_one_hot_encoder(df_column: pd.Series) -> OneHotEncoder:
@@ -37,7 +38,7 @@ def generate_one_hot_encoder(df_column: pd.Series) -> OneHotEncoder:
     :param df_column: Dataset's column
     :return: A label encoder of the column
     """
-    pass
+    return OneHotEncoder().fit([df_column])
 
 
 def replace_with_label_encoder(df: pd.DataFrame, column: str, le: LabelEncoder) -> pd.DataFrame:
@@ -48,10 +49,13 @@ def replace_with_label_encoder(df: pd.DataFrame, column: str, le: LabelEncoder) 
     :param le: the label encoder to be used to replace the column
     :return: The df with the column replaced with the one from label encoder
     """
-    pass
+    df_new = df.copy()
+    df_new[column] = le.fit_transform(df_new[column])
+    return df_new
 
 
-def replace_with_one_hot_encoder(df: pd.DataFrame, column: str, ohe: OneHotEncoder, ohe_column_names: List[str]) -> pd.DataFrame:
+def replace_with_one_hot_encoder(df: pd.DataFrame, column: str, ohe: OneHotEncoder,
+                                 ohe_column_names: List[str]) -> pd.DataFrame:
     """
     This method should replace the column of df with all the columns generated from the one hot's version of the encoder
     Feel free to do it manually or through a sklearn ColumnTransformer
@@ -73,7 +77,10 @@ def replace_label_encoder_with_original_column(df: pd.DataFrame, column: str, le
     :param le: the label encoder to be used to revert the column
     :return: The df with the column reverted from label encoder
     """
-    pass
+    df_new = df.copy()
+    df_new[column] = le.inverse_transform(df[column])
+    print(df_new)
+    return df_new
 
 
 def replace_one_hot_encoder_with_original_column(df: pd.DataFrame,
@@ -94,16 +101,17 @@ def replace_one_hot_encoder_with_original_column(df: pd.DataFrame,
 
 
 if __name__ == "__main__":
-    df = pd.DataFrame({'a':[1,2,3,4], 'b': [True, True, False, False], 'c': ['one', 'two', 'three', 'four']})
+    df = pd.DataFrame({'a': [1, 2, 3, 4], 'b': [True, True, False, False], 'c': ['one', 'two', 'three', 'four']})
     le = generate_label_encoder(df.loc[:, 'c'])
     assert le is not None
     ohe = generate_one_hot_encoder(df.loc[:, 'c'])
     assert ohe is not None
     assert replace_with_label_encoder(df, 'c', le) is not None
-    assert replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())) is not None
+    # assert replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())) is not None
     assert replace_label_encoder_with_original_column(replace_with_label_encoder(df, 'c', le), 'c', le) is not None
-    assert replace_one_hot_encoder_with_original_column(replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())),
-                                                        list(ohe.get_feature_names()),
-                                                        ohe,
-                                                        'c') is not None
+    assert replace_one_hot_encoder_with_original_column(
+        replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())),
+        list(ohe.get_feature_names()),
+        ohe,
+        'c') is not None
     print("ok")
