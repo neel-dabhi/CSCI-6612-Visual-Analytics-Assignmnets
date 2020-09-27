@@ -61,6 +61,7 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
+    print(df.dtypes)
     return df._get_numeric_data().columns.tolist()
 
 

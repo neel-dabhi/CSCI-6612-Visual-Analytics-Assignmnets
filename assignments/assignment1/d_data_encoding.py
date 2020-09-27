@@ -28,7 +28,6 @@ def generate_label_encoder(df_column: pd.Series) -> LabelEncoder:
     :param df_column: Dataset's column
     :return: A label encoder of the column
     """
-
     return LabelEncoder().fit(df_column)
 
 
@@ -50,7 +49,7 @@ def replace_with_label_encoder(df: pd.DataFrame, column: str, le: LabelEncoder) 
     :return: The df with the column replaced with the one from label encoder
     """
     df_new = df.copy()
-    df_new[column] = le.fit_transform(df_new[column])
+    df_new[column] = le.transform(df_new[column])
     return df_new
 
 
@@ -65,7 +64,13 @@ def replace_with_one_hot_encoder(df: pd.DataFrame, column: str, ohe: OneHotEncod
     :param ohe_column_names: the names to be used as the one hot encoded's column names
     :return: The df with the column replaced with the one from label encoder
     """
-    pass
+
+    df_new = df.copy()
+    x = pd.DataFrame(ohe.fit_transform(df_new[[column]]).toarray())
+    x.columns = ohe_column_names
+    result = pd.concat([df_new, x], axis=1, sort=False)
+    result = result.drop(column, axis='columns')
+    return result
 
 
 def replace_label_encoder_with_original_column(df: pd.DataFrame, column: str, le: LabelEncoder) -> pd.DataFrame:
@@ -79,7 +84,6 @@ def replace_label_encoder_with_original_column(df: pd.DataFrame, column: str, le
     """
     df_new = df.copy()
     df_new[column] = le.inverse_transform(df[column])
-    print(df_new)
     return df_new
 
 
@@ -97,7 +101,12 @@ def replace_one_hot_encoder_with_original_column(df: pd.DataFrame,
     :param original_column_name: the original column name which was used before being replaced with the one hot encoded version of it
     :return: The df with the columns reverted from the one hot encoder
     """
-    pass
+    df_new = df.copy()
+    x = pd.DataFrame(ohe.inverse_transform(df_new[columns]))
+    x.columns = [original_column_name]
+    result = pd.concat([df_new, x], axis=1, sort=False)
+    result = result.drop(columns=columns)
+    return result
 
 
 if __name__ == "__main__":
@@ -107,7 +116,7 @@ if __name__ == "__main__":
     ohe = generate_one_hot_encoder(df.loc[:, 'c'])
     assert ohe is not None
     assert replace_with_label_encoder(df, 'c', le) is not None
-    # assert replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())) is not None
+    assert replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())) is not None
     assert replace_label_encoder_with_original_column(replace_with_label_encoder(df, 'c', le), 'c', le) is not None
     assert replace_one_hot_encoder_with_original_column(
         replace_with_one_hot_encoder(df, 'c', ohe, list(ohe.get_feature_names())),
