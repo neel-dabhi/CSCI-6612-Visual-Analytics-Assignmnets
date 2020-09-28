@@ -13,8 +13,6 @@ from assignments.assignment1.c_data_cleaning import *
 from assignments.assignment1.d_data_encoding import *
 from assignments.assignment1.a_load_file import read_dataset
 
-pd.set_option('display.max_columns', 100)
-
 
 ##############################################
 # Example(s). Read the comments in the following method(s)
@@ -237,8 +235,8 @@ def process_life_expectancy_dataset():
 
 
 if __name__ == "__main__":
-    assert process_iris_dataset() is not None
-    assert process_iris_dataset_again() is not None
-    assert process_amazon_video_game_dataset() is not None
-    assert process_amazon_video_game_dataset_again() is not None
+    # assert process_iris_dataset() is not None
+    # assert process_iris_dataset_again() is not None
+    # assert process_amazon_video_game_dataset() is not None
+    # assert process_amazon_video_game_dataset_again() is not None
     assert process_life_expectancy_dataset() is not None

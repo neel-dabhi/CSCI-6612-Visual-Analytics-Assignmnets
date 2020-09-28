@@ -109,7 +109,6 @@ def replace_one_hot_encoder_with_original_column(df: pd.DataFrame,
     x.columns = [original_column_name]
     result = pd.concat([df_new, x], axis=1, sort=False)
     result = result.drop(columns=columns)
-    print(result)
     return result
 
 
