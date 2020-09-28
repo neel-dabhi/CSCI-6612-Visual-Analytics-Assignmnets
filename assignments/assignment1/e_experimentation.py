@@ -85,10 +85,11 @@ def process_iris_dataset_again() -> pd.DataFrame:
     df.loc[df['petal_width'] > 1.0, 'petal_width'] = df['petal_width'].mean()
     df.loc[df['petal_width'] < 0.0, 'petal_width'] = df['petal_width'].mean()
 
-    # Assigning binary col conditionally before the normalization happens as normalization will bring values between 0 & 1
+    # Assigning binary col conditionally before the normalization
+    # happens as normalization will bring values between 0 & 1
     df['large_sepal_lenght'] = df["sepal_length"] > 5.0
 
-    # Normalizing
+    # Fixing data before normalization as we need scaled data
     for nc in numeric_columns:
         df = fix_outliers(df, nc)
         df = fix_nans(df, nc)
@@ -127,6 +128,7 @@ def process_amazon_video_game_dataset():
     """
     review_counts = df.groupby(by='asin', as_index=False).agg(
         {'user': np.count_nonzero, 'review': np.mean, 'time': np.max})
+    review_counts = review_counts.rename(columns={'user': 'count'})
 
     return review_counts
 
@@ -156,7 +158,7 @@ def process_amazon_video_game_dataset_again():
     """
     df = df.groupby(by='user', as_index=False) \
         .agg({'asin': np.count_nonzero,
-              'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]})
+              'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]}).fillna(0)
 
     return df
 
@@ -229,14 +231,14 @@ def process_life_expectancy_dataset():
 
     # one hot encoding of continent
     ohe = generate_one_hot_encoder(df_merged['continent'])
-    df_oh_encoded = replace_with_one_hot_encoder(df_le_encoded,'continent', ohe, list(ohe.get_feature_names()))
+    df_oh_encoded = replace_with_one_hot_encoder(df_le_encoded, 'continent', ohe, list(ohe.get_feature_names()))
 
     return df_oh_encoded
 
 
 if __name__ == "__main__":
-    # assert process_iris_dataset() is not None
-    # assert process_iris_dataset_again() is not None
-    # assert process_amazon_video_game_dataset() is not None
-    # assert process_amazon_video_game_dataset_again() is not None
+    assert process_iris_dataset() is not None
+    assert process_iris_dataset_again() is not None
+    assert process_amazon_video_game_dataset() is not None
+    assert process_amazon_video_game_dataset_again() is not None
     assert process_life_expectancy_dataset() is not None
