@@ -13,6 +13,8 @@ from assignments.assignment1.c_data_cleaning import *
 from assignments.assignment1.d_data_encoding import *
 from assignments.assignment1.a_load_file import read_dataset
 
+pd.set_option('display.max_columns', 100)
+
 
 ##############################################
 # Example(s). Read the comments in the following method(s)
@@ -46,10 +48,12 @@ def process_iris_dataset() -> pd.DataFrame:
         df.loc[:, nc] = standardize_column(df.loc[:, nc])
 
     distances = pd.DataFrame()
+
     for nc_combination in list(itertools.combinations(numeric_columns, 2)):
         distances[str(nc_combination)] = calculate_numeric_distance(df.loc[:, nc_combination[0]],
                                                                     df.loc[:, nc_combination[1]],
                                                                     DistanceMetric.EUCLIDEAN).values
+
     df['numeric_mean'] = distances.mean(axis=1)
 
     for cc in categorical_columns:
@@ -73,7 +77,26 @@ def process_iris_dataset_again() -> pd.DataFrame:
     saying whether the row's sepal_length is larger (true) or not (false) than 5.0
     :return: A dataframe with the above conditions.
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'iris.csv'))
+    numeric_columns = get_numeric_columns(df)
+    categorical_columns = get_text_categorical_columns(df)
+
+    df.loc[df['petal_width'] > 1.0, 'petal_width'] = df['petal_width'].mean()
+    df.loc[df['petal_width'] < 0.0, 'petal_width'] = df['petal_width'].mean()
+
+    df['large_sepal_lenght'] = df["sepal_length"] > 5.0
+
+    for nc in numeric_columns:
+        df = fix_outliers(df, nc)
+        df = fix_nans(df, nc)
+        df.loc[:, nc] = normalize_column(df.loc[:, nc])
+
+    for cc in categorical_columns:
+        le = generate_label_encoder(df.loc[:, cc])
+        df = replace_with_label_encoder(df, cc, le)
+
+    return df
 
 
 def process_amazon_video_game_dataset():
@@ -86,7 +109,22 @@ def process_amazon_video_game_dataset():
         and the average rating (as the "review" column).
     :return: A dataframe with the above conditions. The columns at the end should be: asin,review,time,count
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'ratings_Video_Games.csv'))
+
+    # 1  The rating has to be between 1.0 and 5.0
+    df = df[df['review'].between(1, 5)]
+
+    # 2 Time should be converted from milliseconds to datetime.datetime format
+    df['time'] = pd.to_datetime(df['time'], unit='ms')
+
+    """
+    Group by asin, counting non zero as review is between 1 and 5, 
+    taken the latest time as it gives when user last rated any product 
+    """
+    review_counts = df.groupby(by='asin', as_index=False).agg(
+        {'user': np.count_nonzero, 'review': np.mean, 'time': np.max})
+    return review_counts
 
 
 def process_amazon_video_game_dataset_again():
@@ -98,7 +136,26 @@ def process_amazon_video_game_dataset_again():
         and a statistical analysis of each user (average, median, std, etc..., each as its own row)
     :return: A dataframe with the above conditions.
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'ratings_Video_Games.csv'))
+
+    # 1  The rating has to be between 1.0 and 5.0
+    df = df.drop(df[(df['review'] < 1.0) & (df['review'] > 5.0)].index)
+
+    # 2 Time should be converted from milliseconds to datetime.datetime format
+    df['time'] = pd.to_datetime(df['time'], unit='ms')
+
+    """
+    3.1 asin : Grouping by user and counting asin value to get number of reviews
+    3.2 review : Counting number of reviews, review mean, review median, review std from column review 
+    3.3 time : min shows users first review, max shows users last review
+    """
+
+    df = df.groupby(by='user', as_index=False) \
+        .agg({'asin': np.count_nonzero,
+              'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]})
+
+    return df
 
 
 def process_life_expectancy_dataset():
@@ -115,6 +172,8 @@ def process_life_expectancy_dataset():
     7. Change the continent column to a one_hot_encoder version of it
     :return: A dataframe with the above conditions.
     """
+
+    # 1
     pass
 
 
