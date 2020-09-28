@@ -28,9 +28,7 @@ def pandas_profile(df: pd.DataFrame, result_html: str = 'report.html'):
 # so far and pandas/numpy/sklearn for the operations
 ##############################################
 def get_column_max(df: pd.DataFrame, column_name: str) -> float:
-    col = df[column_name]
-    max_num = col.max()
-    return max_num
+    return df[column_name].max()
 
 
 def get_column_min(df: pd.DataFrame, column_name: str) -> float:
@@ -61,7 +59,6 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
-    print(df.dtypes)
     return df._get_numeric_data().columns.tolist()
 
 

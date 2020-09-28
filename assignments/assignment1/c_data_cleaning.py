@@ -83,23 +83,19 @@ def fix_outliers(df: pd.DataFrame, column: str) -> pd.DataFrame:
     :return: The dataset with fixed column
     """
 
-    # if the col is numeric go deeper to fix outliers
-    df_copy = pd.DataFrame({'c_name': df[column]})
+    df_copy = df.copy()
     numeric_columns_in_df = get_numeric_columns(df_copy)
 
-    if 'c_name' in numeric_columns_in_df:
-        df.dropna(how='all')
+    if column in numeric_columns_in_df:
         # Removing outliers using IQR
-        Q1 = df[column].quantile(0.25, interpolation='nearest')
-        Q3 = df[column].quantile(0.75, interpolation='nearest')
+        Q1 = df_copy[column].quantile(0.25, interpolation='nearest')
+        Q3 = df_copy[column].quantile(0.75, interpolation='nearest')
         IQR = Q3 - Q1
         lower_quartile = Q1 - (1.5 * IQR)
         upper_quartile = Q3 + (1.5 * IQR)
-        df = df[(df[column] > lower_quartile) and (df[column] < upper_quartile)]
+        df_copy = df_copy[(df_copy[column] > lower_quartile) & (df_copy[column] < upper_quartile)]
 
-    # handle for  categorical, date time, binary
-
-    return df
+    return df_copy
 
 
 def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -120,10 +116,9 @@ def fix_nans(df: pd.DataFrame, column: str) -> pd.DataFrame:
     check if col is of numeric, then try to replace nan with mean
     (that is fixing outlier/nan with replacing it with mean)
     """
-    df_copy = pd.DataFrame({'c_name': df_new[column]})
-    numeric_columns_in_df = get_numeric_columns(df_copy)
+    numeric_columns_in_df = get_numeric_columns(df_new)
 
-    if df_new[column] in numeric_columns_in_df:
+    if column in numeric_columns_in_df:
         df_new[column] = df_new[column].fillna(df_new[column].mean())
         return df_new
 
@@ -193,7 +188,7 @@ def calculate_numeric_distance(df_column_1: pd.Series, df_column_2: pd.Series,
         # Calculating for distance of 1D point
         if distance_metric == DistanceMetric.EUCLIDEAN:
             # EXPLAIN
-            return np.abs(np.sqrt(np.sum(np.square(df_column_1 - df_column_2))))
+            return np.sqrt(np.square(df_column_1 - df_column_2))
 
         if distance_metric == DistanceMetric.MANHATTAN:
             # EXPLAIN
