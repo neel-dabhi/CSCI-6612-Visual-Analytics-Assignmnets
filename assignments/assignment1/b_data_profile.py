@@ -32,15 +32,11 @@ def get_column_max(df: pd.DataFrame, column_name: str) -> float:
 
 
 def get_column_min(df: pd.DataFrame, column_name: str) -> float:
-    col = df[column_name]
-    min_num = col.min()
-    return min_num
+    return df[column_name].min()
 
 
 def get_column_mean(df: pd.DataFrame, column_name: str) -> float:
-    col = df[column_name]
-    mean_num = col.mean()
-    return mean_num
+    return df[column_name].mean()
 
 
 def get_column_count_of_nan(df: pd.DataFrame, column_name: str) -> float:
@@ -53,6 +49,10 @@ def get_column_count_of_nan(df: pd.DataFrame, column_name: str) -> float:
 
 
 def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float:
+    """
+    This method returns number of duplicate rows in binary col
+    by summing that binary cols (sum of ones/True) we can get number of duplicates
+    """
     cols_duplicate = df.duplicated(subset=[column_name])
     cols_duplicate = cols_duplicate[cols_duplicate == True]
     return cols_duplicate.sum()
