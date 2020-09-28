@@ -235,8 +235,8 @@ def process_life_expectancy_dataset():
 
 
 if __name__ == "__main__":
-    # assert process_iris_dataset() is not None
-    # assert process_iris_dataset_again() is not None
-    # assert process_amazon_video_game_dataset() is not None
-    # assert process_amazon_video_game_dataset_again() is not None
+    assert process_iris_dataset() is not None
+    assert process_iris_dataset_again() is not None
+    assert process_amazon_video_game_dataset() is not None
+    assert process_amazon_video_game_dataset_again() is not None
     assert process_life_expectancy_dataset() is not None
