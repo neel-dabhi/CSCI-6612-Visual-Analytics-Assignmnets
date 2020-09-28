@@ -13,7 +13,7 @@ def read_dataset(path: Path) -> pd.DataFrame:
     Notice that this path is of type Path, which is a helper type from python to best handle
     the paths styles of different operating systems.
     """
-    pass
+    return pd.read_csv(path, delimiter=',')
 
 
 if __name__ == "__main__":
@@ -22,6 +22,7 @@ if __name__ == "__main__":
     if and only if this file is the one being executed as the main script. Use this
     in the future to test your scripts before integrating them with other scripts.
     """
+
     dataset = read_dataset(Path('..', '..', 'iris.csv'))
     assert type(dataset) == pd.DataFrame
     print("ok")
