@@ -37,7 +37,7 @@ def generate_one_hot_encoder(df_column: pd.Series) -> OneHotEncoder:
     :param df_column: Dataset's column
     :return: A label encoder of the column
     """
-    # df_column.unique() : getting all the unique categories to encode
+    # df_column.unique() : getting only unique categories to encode
     return OneHotEncoder().fit([df_column.unique()])
 
 
@@ -73,7 +73,6 @@ def replace_with_one_hot_encoder(df: pd.DataFrame, column: str, ohe: OneHotEncod
     df_new.reset_index(drop=True, inplace=True)
     encoded.reset_index(drop=True, inplace=True)
     df_encoded = pd.concat([df_new, encoded], axis=1)
-
     return df_encoded
 
 

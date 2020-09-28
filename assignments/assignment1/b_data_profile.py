@@ -59,7 +59,8 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
-    return df._get_numeric_data().columns.tolist()
+    cols = df.select_dtypes([np.number]).columns
+    return cols.tolist()
 
 
 def get_binary_columns(df: pd.DataFrame) -> List[str]:
