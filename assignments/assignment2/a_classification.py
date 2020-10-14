@@ -8,14 +8,17 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
 
 from assignments.assignment1.a_load_file import read_dataset
-from assignments.assignment1.d_data_encoding import generate_label_encoder, replace_with_label_encoder, fix_outliers, fix_nans, normalize_column
-from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset_again
+from assignments.assignment1.d_data_encoding import generate_label_encoder, replace_with_label_encoder, fix_outliers, \
+    fix_nans, normalize_column
+from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset_again, \
+    process_iris_dataset_again
 
 """
 Classification is a supervised form of machine learning. It uses labeled data, which is data with an expected
 result available, and uses it to train a machine learning model to predict the said result. Classification
 focuses in results of the categorical type.
 """
+pd.set_option('display.max_columns', 100)
 
 
 ##############################################
@@ -26,7 +29,7 @@ def simple_random_forest_classifier(X: pd.DataFrame, y: pd.Series) -> Dict:
     Simple method to create and train a random forest classifier
     https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
 
     # If necessary, change the n_estimators, max_depth and max_leaf_nodes in the below method to accelerate the model training,
     # but don't forget to comment why you did and any consequences of setting them!
@@ -66,7 +69,7 @@ def reusing_code_random_forest_on_iris() -> Dict:
     le = generate_label_encoder(y)
 
     # Be careful to return a copy of the input with the changes, instead of changing inplace the inputs here!
-    y_encoded = replace_with_label_encoder(y.toframe(), column='species', le=le)
+    y_encoded = replace_with_label_encoder(y.to_frame(), column='species', le=le)
     return simple_random_forest_classifier(X, y_encoded['species'])
 
 
@@ -81,7 +84,10 @@ def random_forest_iris_dataset_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    pass
+    df = process_iris_dataset_again()
+    X, y = df.iloc[:, :4], df.iloc[:, 4]
+
+    return simple_random_forest_classifier(X, y)
 
 
 def decision_tree_classifier(X: pd.DataFrame, y: pd.Series) -> Dict:
@@ -93,7 +99,17 @@ def decision_tree_classifier(X: pd.DataFrame, y: pd.Series) -> Dict:
     :param y: Label data
     :return: model, accuracy and prediction of the test set
     """
-    return dict(model=None, accuracy=None, test_prediction=None)
+
+    # setting the random_state to keep the output of every run same
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+    model = DecisionTreeClassifier()
+    model.fit(X_train, y_train)
+
+    test_prediction = model.predict(X_test)
+    accuracy = model.score(X_test, y_test)
+
+    return dict(model=model, accuracy=accuracy, test_prediction=test_prediction)
 
 
 def train_iris_dataset_again() -> Dict:
@@ -104,7 +120,17 @@ def train_iris_dataset_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    return dict(model=None, accuracy=None, test_prediction=None)
+
+    df = process_iris_dataset_again()
+    X, y = df.iloc[:, :4], df.iloc[:, 4]
+
+    dt = decision_tree_classifier(X, y)
+    rf = simple_random_forest_classifier(X, y)
+
+    if dt['accuracy'] > rf['accuracy']:
+        return dt
+    else:
+        return rf
 
 
 def train_amazon_video_game_again() -> Dict:
@@ -117,7 +143,35 @@ def train_amazon_video_game_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    return dict(model=None, accuracy=None, test_prediction=None)
+    df = process_amazon_video_game_dataset_again()
+    # dropping time col
+    df = df.drop(columns=['time'])
+    df.columns = df.columns.droplevel()
+    df.rename(columns={'': 'user'}, inplace=True)
+    df = df[['user', 'count_nonzero', 'mean']]
+
+    # label reviews on Positive/Negative/Neutrals
+    # remove all the neutrals , check balance of positive and negative
+
+    # Group by product mean the reviews
+
+    # # taking just first 5000 for sampling
+    # X, y = df.iloc[:5000, 1:3], df.iloc[:5000, 0]
+
+    # dt = decision_tree_classifier(X, y)
+    # rf = simple_random_forest_classifier(X, y)
+    #
+    # """
+    # Both the model will give accuracy zero, as all the records from process_amazon_video_game_dataset_again()
+    # are unique, when we split the data into train/test data set in both of them data will be unique so
+    # model will not be able to get any pattern hence accuracy zero.
+    # """
+    # if dt['accuracy'] > rf['accuracy']:
+    #     return dt
+    # else:
+    #     return rf
+
+    pass
 
 
 def train_life_expectancy() -> Dict:
@@ -142,6 +196,7 @@ def your_choice() -> Dict:
     We will not grade your result itself, but your decision-making and suppositions given the goal you decided.
     Use this as a small exercise of what you will do in the project.
     """
+
     pass
 
 
