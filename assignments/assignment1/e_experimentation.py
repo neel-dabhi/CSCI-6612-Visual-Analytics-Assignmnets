@@ -154,9 +154,9 @@ def process_amazon_video_game_dataset_again():
     3.2 review : Counting number of reviews, review mean, review median, review std from column review 
     3.3 time : min shows users first review, max shows users last review
     """
-    df = df.groupby(by='user', as_index=False) \
-        .agg({'asin': np.count_nonzero,
-              'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]}).fillna(0)
+    # df = df.groupby(by='user', as_index=False) \
+    #     .agg({'asin': np.count_nonzero,
+    #           'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]}).fillna(0)
 
     return df
 
@@ -216,7 +216,7 @@ def process_life_expectancy_dataset():
 
     # Dropping all columns except country, continent, year, value and latitude
     # eight_regions as continent because it gives more accurate position of country on the globe
-    df_merged = df_merged[['country', 'value', 'eight_regions', 'year', 'Latitude']]
+    df_merged = df_merged[['country','value', 'eight_regions', 'year', 'Latitude']]
     df_merged = df_merged.rename(columns={'eight_regions': 'continent'})
 
     # Changing the latitude column from numerical to categorical
