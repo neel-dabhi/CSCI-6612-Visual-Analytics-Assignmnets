@@ -134,10 +134,8 @@ def train_iris_dataset_again() -> Dict:
     rfr = simple_random_forest_regressor(X, y)
 
     if dtr['score'] > rfr['score']:
-        print(dtr)
         return dtr
     else:
-        print(rfr)
         return rfr
 
 
