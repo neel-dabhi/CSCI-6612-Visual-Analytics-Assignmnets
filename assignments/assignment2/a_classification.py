@@ -172,13 +172,9 @@ def train_amazon_video_game_again() -> Dict:
     """
 
     if dt['accuracy'] > rf['accuracy']:
-        print(dt)
         return dt
     else:
-        print(rf)
         return rf
-
-    pass
 
 
 def train_life_expectancy() -> Dict:
@@ -213,10 +209,8 @@ def train_life_expectancy() -> Dict:
     rf = simple_random_forest_classifier(X, y)
 
     if dt['accuracy'] > rf['accuracy']:
-        print(dt)
         return dt
     else:
-        print(rf)
         return rf
 
 
@@ -310,8 +304,6 @@ def your_choice() -> Dict:
         {'continent': 'first', 'UN member since': np.mean})
     df_le_encoded['diff'] = df_temp
 
-    print(df_le_encoded)
-
     # given the membership years and life expectancy classify region
 
     X, y = df_le_encoded.iloc[:, [2, 3]], df_le_encoded.iloc[:, 1]
@@ -324,13 +316,9 @@ def your_choice() -> Dict:
               Years in UN and place on the globe.
     """
     if dt['accuracy'] > rf['accuracy']:
-        print(dt)
         return dt
     else:
-        print(rf)
         return rf
-
-    pass
 
 
 if __name__ == "__main__":

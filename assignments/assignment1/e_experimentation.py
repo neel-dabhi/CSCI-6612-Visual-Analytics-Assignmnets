@@ -93,10 +93,10 @@ def process_iris_dataset_again() -> pd.DataFrame:
         df = fix_nans(df, nc)
         df.loc[:, nc] = normalize_column(df.loc[:, nc])
 
-    # Label Encoding
-    for cc in categorical_columns:
-        le = generate_label_encoder(df.loc[:, cc])
-        df = replace_with_label_encoder(df, cc, le)
+    # # Label Encoding
+    # for cc in categorical_columns:
+    #     le = generate_label_encoder(df.loc[:, cc])
+    #     df = replace_with_label_encoder(df, cc, le)
 
     return df
 
