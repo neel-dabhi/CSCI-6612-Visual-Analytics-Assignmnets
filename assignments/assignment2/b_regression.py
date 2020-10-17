@@ -90,9 +90,7 @@ def random_forest_iris_dataset_again() -> Dict:
     df.drop(columns=['large_sepal_lenght'], inplace=True)
     ohe = generate_one_hot_encoder(df['species'])
     df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
-
     X, y = df.iloc[:, 1:], df.iloc[:, 0]
-
     return simple_random_forest_regressor(X, y)
 
 
@@ -193,17 +191,14 @@ def train_life_expectancy() -> Dict:
 
     ohe = generate_one_hot_encoder(df['country'])
     df = replace_with_one_hot_encoder(df, 'country', ohe, list(ohe.get_feature_names()))
-
     X, y = df.iloc[:, 1:], df.iloc[:, 0]
 
     dtr = decision_tree_regressor(X, y)
     rfr = simple_random_forest_regressor(X, y)
 
     if dtr['score'] > rfr['score']:
-        print(dtr)
         return dtr
     else:
-        print(rfr)
         return rfr
 
 
@@ -257,8 +252,6 @@ def your_choice() -> Dict:
         return dtr
     else:
         return rfr
-
-    pass
 
 
 if __name__ == "__main__":

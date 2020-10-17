@@ -3,14 +3,19 @@ from typing import List, Dict
 import pandas as pd
 import numpy as np
 from sklearn import metrics
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 
 from assignments.assignment1.a_load_file import read_dataset
+from assignments.assignment1.b_data_profile import get_text_categorical_columns
 from assignments.assignment1.d_data_encoding import fix_outliers, fix_nans, normalize_column, \
     generate_one_hot_encoder, replace_with_one_hot_encoder, generate_label_encoder, replace_with_label_encoder
-from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset
+from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset, \
+    process_iris_dataset_again, process_amazon_video_game_dataset_again, process_life_expectancy_dataset
+
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 50)
 
 """
 Clustering is a non-supervised form of machine learning. It uses unlabeled data
@@ -71,7 +76,7 @@ def iris_clusters() -> Dict:
 # Implement all the below methods
 # Don't install any other python package other than provided by python or in requirements.txt
 ##############################################
-def custom_clustering(X: pd.DataFrame) -> Dict:
+def custom_clustering(X: pd.DataFrame, eps=0.45, min_samples=3) -> Dict:
     """
     As you saw before, it is much harder to apply the right distance metrics. Take a look at:
     https://scikit-learn.org/stable/modules/clustering.html
@@ -85,7 +90,17 @@ def custom_clustering(X: pd.DataFrame) -> Dict:
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html) and the result of clustering the
     input dataset.
     """
-    return dict(model=None, score=None, clusters=None)
+
+    """
+    I have chosen to go with the DBSCAN can find clusters surrounded by another cluster unlike k-means, 
+    and it identifies the outliers very well.
+    """
+
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean')
+    model = dbscan.fit(X)
+    labels = model.labels_
+    score = metrics.silhouette_score(X, labels, metric='euclidean')
+    return dict(model=model, score=score, clusters=labels)
 
 
 def cluster_iris_dataset_again() -> Dict:
@@ -95,7 +110,19 @@ def cluster_iris_dataset_again() -> Dict:
     We are not looking for an exact answer, we want to know if you really understand your choice and the results of custom_clustering.
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
-    return dict(model=None, score=None, clusters=None)
+
+    """
+    here we are getting higher silhouette score than k-means because custom_clustering(DBSCAN) forms clusters based 
+    on how similar data points are with each other in a single cluster. However, k-means simply measures the distance 
+    from moving avg point, it does not consider how intensely similar the features are. 
+    """
+    df = process_iris_dataset_again()
+    df.drop(columns=['large_sepal_lenght'], inplace=True)
+    ohe = generate_one_hot_encoder(df['species'])
+    df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
+    result = custom_clustering(df, eps=0.25, min_samples=3)
+    print(dict(model=result['model'], score=result['score'], clusters=result['clusters']))
+    return dict(model=result['model'], score=result['score'], clusters=result['clusters'])
 
 
 def cluster_amazon_video_game() -> Dict:
@@ -105,7 +132,17 @@ def cluster_amazon_video_game() -> Dict:
     We are not looking for an exact answer, we want to know if you really understand your choice and the results of custom_clustering.
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
-    return dict(model=None, score=None, clusters=None)
+
+    """
+    In this data set I have clustered products(asin) with the similar count of ratings and similar avg. rating
+    it is possible with DBSCAN, as it can understand similarity based on above mentioned features. for example 
+    it can cluster product A which has 4 total ratings, and 3.5 avg rating with product B with 
+    total ratings and avg. rating close to product A's
+    """
+    df = process_amazon_video_game_dataset()
+    df.drop(columns='time', inplace=True)
+    result = custom_clustering(df.iloc[:, 1:3], eps=0.1, min_samples=3)
+    return dict(model=result['model'], score=result['score'], clusters=result['clusters'])
 
 
 def cluster_amazon_video_game_again() -> Dict:
@@ -115,6 +152,9 @@ def cluster_amazon_video_game_again() -> Dict:
     We are not looking for an exact answer, we want to know if you really understand your choice and the results of custom_clustering.
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
+    df = process_amazon_video_game_dataset_again()
+    df.drop(columns='time', inplace=True)
+
     return dict(model=None, score=None, clusters=None)
 
 
@@ -125,12 +165,29 @@ def cluster_life_expectancy() -> Dict:
     We are not looking for an exact answer, we want to know if you really understand your choice and the results of custom_clustering.
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
+
+    df = process_life_expectancy_dataset()
+
+    # Dropping regions, and Latitude as it is irrelevant to life expectancy value.
+    # we can see a trend over year
+    df = df[['country', 'value', 'year']]
+
+    # Keeping every third row because it might be possible that life expectancy is not
+    # changed significantly in the interval of one year, keeping interval to 3 can saw significant increase in value.
+    df = df[df.index % 3 == 0]
+
+    ohe = generate_one_hot_encoder(df['country'])
+    df = replace_with_one_hot_encoder(df, 'country', ohe, list(ohe.get_feature_names()))
+    X, y = df.iloc[:, 1:], df.iloc[:, 0]
+
+    print(df)
+
     return dict(model=None, score=None, clusters=None)
 
 
 if __name__ == "__main__":
     iris_clusters()
-    assert cluster_iris_dataset_again() is not None
-    assert cluster_amazon_video_game() is not None
-    assert cluster_amazon_video_game_again() is not None
+    # assert cluster_iris_dataset_again() is not None
+    # assert cluster_amazon_video_game() is not None
+    # assert cluster_amazon_video_game_again() is not None
     assert cluster_life_expectancy() is not None
