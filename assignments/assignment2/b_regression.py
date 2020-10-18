@@ -7,9 +7,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 
 from assignments.assignment1.a_load_file import read_dataset
+from assignments.assignment1.c_data_cleaning import fix_numeric_wrong_values, normalize_column
 from assignments.assignment1.d_data_encoding import fix_outliers, fix_nans, normalize_column, \
-    generate_one_hot_encoder, replace_with_one_hot_encoder
-from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset
+    generate_one_hot_encoder, replace_with_one_hot_encoder, generate_label_encoder, replace_with_label_encoder, \
+    get_numeric_columns
+from assignments.assignment1.e_experimentation import process_iris_dataset, process_amazon_video_game_dataset, \
+    process_iris_dataset_again, process_life_expectancy_dataset
+
+pd.set_option('display.max_columns', 100)
 
 """
 Regression is a supervised form of machine learning. It uses labeled data, which is data with an expected
@@ -80,7 +85,16 @@ def random_forest_iris_dataset_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    pass
+
+    """
+    The score decreases a bit compared to above one as in process_iris_dataset_again() we are normalizing the column
+    """
+    df = process_iris_dataset_again()
+    df.drop(columns=['large_sepal_lenght'], inplace=True)
+    ohe = generate_one_hot_encoder(df['species'])
+    df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
+    X, y = df.iloc[:, 1:], df.iloc[:, 0]
+    return simple_random_forest_regressor(X, y)
 
 
 def decision_tree_regressor(X: pd.DataFrame, y: pd.Series) -> Dict:
@@ -92,7 +106,13 @@ def decision_tree_regressor(X: pd.DataFrame, y: pd.Series) -> Dict:
     :param y: Label data
     :return: model, score and prediction of the test set
     """
-    return dict(model=None, score=None, test_prediction=None)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
+    model = DecisionTreeRegressor()
+    model.fit(X_train, y_train)
+    y_predict = model.predict(X_test)
+    score = model.score(X_test, y_test)
+    return dict(model=model, score=score, test_prediction=y_predict)
 
 
 def train_iris_dataset_again() -> Dict:
@@ -104,7 +124,24 @@ def train_iris_dataset_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    return dict(model=None, score=None, test_prediction=None)
+    df = process_iris_dataset_again()
+
+    ohe = generate_one_hot_encoder(df['species'])
+    df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
+
+    X, y = df.iloc[:, 1:], df.iloc[:, 0]
+
+    dtr = decision_tree_regressor(X, y)
+    rfr = simple_random_forest_regressor(X, y)
+
+    """
+    Score of both the model is almost the same, but random forrest is bit high.
+    as it uses multiple decision trees to predict.
+    """
+    if dtr['score'] > rfr['score']:
+        return dtr
+    else:
+        return rfr
 
 
 def train_amazon_video_game() -> Dict:
@@ -117,7 +154,27 @@ def train_amazon_video_game() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    return dict(model=None, score=None, test_prediction=None)
+
+    df = process_amazon_video_game_dataset()
+    df = df.drop(columns=['time'])
+
+    # Not feeding the asin to the model, as they all are unique.
+    # X: number of product reviewed by user
+    # y: avg. of all the reviews
+    X, y = df.iloc[:, [2]], df.iloc[:, 1]
+
+    dtr = decision_tree_regressor(X, y)
+    rfr = simple_random_forest_regressor(X, y)
+
+    """
+    Here I am getting negative R^2 which means the data is poorly fitted
+    Also, it implies that the model does not follow any trend with the data,
+    and the regression line of our model is worse then the mean line. 
+    """
+    if dtr['score'] > rfr['score']:
+        return dtr
+    else:
+        return rfr
 
 
 def train_life_expectancy() -> Dict:
@@ -128,7 +185,27 @@ def train_life_expectancy() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
-    return dict(model=None, score=None, test_prediction=None)
+    df = process_life_expectancy_dataset()
+
+    # Dropping regions, and Latitude as it is irrelevant to life expectancy value.
+    # we can see a trend over year
+    df = df[['country', 'value', 'year']]
+
+    # Keeping every third row because it might be possible that life expectancy is not
+    # changed significantly in the interval of one year, keeping interval to 3 can saw significant increase in value.
+    df = df[df.index % 3 == 0]
+
+    ohe = generate_one_hot_encoder(df['country'])
+    df = replace_with_one_hot_encoder(df, 'country', ohe, list(ohe.get_feature_names()))
+    X, y = df.iloc[:, 1:], df.iloc[:, 0]
+
+    dtr = decision_tree_regressor(X, y)
+    rfr = simple_random_forest_regressor(X, y)
+
+    if dtr['score'] > rfr['score']:
+        return dtr
+    else:
+        return rfr
 
 
 def your_choice() -> Dict:
@@ -141,7 +218,46 @@ def your_choice() -> Dict:
     We will not grade your result itself, but your decision-making and suppositions given the goal you decided.
     Use this as a small exercise of what you will do in the project.
     """
-    pass
+
+    """
+    Goal: check if converting numeric values into categorical data impacts the accuracy of the model
+          For this problem first I have min-max normalized the sepal_length, sepal_width, petal_length, and petal_width
+          to the categories such as low, medium and high. converting 
+    """
+
+    df = read_dataset(Path('..', '..', 'iris.csv'))
+    numeric_columns = get_numeric_columns(df)
+
+    # Min Max normalizing each numeric col
+    for col in numeric_columns:
+        df[col] = normalize_column(df[col])
+
+    # converting all the numeric values into categorical
+    for col in numeric_columns:
+        df[col] = np.where(df[col] < 0.33, 'low', np.where(df[col] > 0.66, 'high', 'medium'))
+
+    for col in numeric_columns:
+        le = generate_label_encoder(df[col])
+        df = replace_with_label_encoder(df, col, le)
+
+    # one hot encode the species col
+    ohe = generate_one_hot_encoder(df['species'])
+    df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
+
+    X, y = df.iloc[:, :4], df.iloc[:, 4:]
+
+    dtr = decision_tree_regressor(X, y)
+    rfr = simple_random_forest_regressor(X, y)
+
+    """
+     Outcome:   here the accuracy increases for the iris data set compared to train_iris_dataset_again()
+                even generalizing a data bit.
+    """
+
+    if dtr['score'] > rfr['score']:
+        return dtr
+    else:
+        return rfr
 
 
 if __name__ == "__main__":
