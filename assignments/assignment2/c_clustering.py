@@ -160,6 +160,7 @@ def cluster_amazon_video_game_again() -> Dict:
     df = df[df.duplicated(subset=['asin'], keep=False)]
     # removing all the users who just rated one product.
     df = df[df.duplicated(subset=['user'], keep=False)]
+
     # Removing Neutral reviews
     df = df[df['review'] != 3]
 
@@ -174,7 +175,10 @@ def cluster_amazon_video_game_again() -> Dict:
 
     """
     Here I am trying to cluster users who has given similar amount of rating with similar mean rating.
-    this type of clustering can be used in e-commerce.
+    For that I am getting all the unique users and how many products they have counted 
+    along with the avg. rating that user gives. I didnt find the need to normalize the review col 
+    as reviews are already between 1 and 5.
+    
     """
     result = custom_clustering(df.iloc[:50000, :])
 
@@ -213,7 +217,7 @@ def cluster_life_expectancy() -> Dict:
 
 if __name__ == "__main__":
     iris_clusters()
-    # assert cluster_iris_dataset_again() is not None
-    # assert cluster_amazon_video_game() is not None
+    assert cluster_iris_dataset_again() is not None
+    assert cluster_amazon_video_game() is not None
     assert cluster_amazon_video_game_again() is not None
-    # assert cluster_life_expectancy() is not None
+    assert cluster_life_expectancy() is not None
