@@ -91,7 +91,6 @@ def random_forest_iris_dataset_again() -> Dict:
     """
     df = process_iris_dataset_again()
     X, y = df.iloc[:, :4], df.iloc[:, 4]
-    print(simple_random_forest_classifier(X, y))
     return simple_random_forest_classifier(X, y)
 
 

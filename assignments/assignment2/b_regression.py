@@ -86,6 +86,9 @@ def random_forest_iris_dataset_again() -> Dict:
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
 
+    """
+    The score decreases a bit compared to above one as in process_iris_dataset_again() we are normalizing the column
+    """
     df = process_iris_dataset_again()
     df.drop(columns=['large_sepal_lenght'], inplace=True)
     ohe = generate_one_hot_encoder(df['species'])
@@ -131,6 +134,10 @@ def train_iris_dataset_again() -> Dict:
     dtr = decision_tree_regressor(X, y)
     rfr = simple_random_forest_regressor(X, y)
 
+    """
+    Score of both the model is almost the same, but random forrest is bit high.
+    as it uses multiple decision trees to predict.
+    """
     if dtr['score'] > rfr['score']:
         return dtr
     else:
