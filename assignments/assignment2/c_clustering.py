@@ -152,8 +152,6 @@ def cluster_amazon_video_game_again() -> Dict:
     We are not looking for an exact answer, we want to know if you really understand your choice and the results of custom_clustering.
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
-    df = process_amazon_video_game_dataset_again()
-    df.drop(columns='time', inplace=True)
 
     return dict(model=None, score=None, clusters=None)
 
@@ -169,25 +167,28 @@ def cluster_life_expectancy() -> Dict:
     df = process_life_expectancy_dataset()
 
     # Dropping regions, and Latitude as it is irrelevant to life expectancy value.
-    # we can see a trend over year
-    df = df[['country', 'value', 'year']]
-
-    # Keeping every third row because it might be possible that life expectancy is not
-    # changed significantly in the interval of one year, keeping interval to 3 can saw significant increase in value.
-    df = df[df.index % 3 == 0]
+    df = df[['country', 'value']]
+    df['value'] = pd.to_numeric(df['value'])
 
     ohe = generate_one_hot_encoder(df['country'])
     df = replace_with_one_hot_encoder(df, 'country', ohe, list(ohe.get_feature_names()))
-    X, y = df.iloc[:, 1:], df.iloc[:, 0]
 
-    print(df)
+    # Normalizing value column to bring down the amplitude of values, else I have to keep lage eps value.
+    df['value'] = normalize_column(df['value'])
 
-    return dict(model=None, score=None, clusters=None)
+    """
+    here I am trying to cluster countries who has similar life expectancy values in a particular year,
+    the challenging part was to get optimal parameter for DBSCAN, I used elbow method to get the right parameter. 
+    It was important to feed the normalized data to the model, as values become more cohesive.
+    """
+    result = custom_clustering(df, eps=0.4, min_samples=3)
+    print(result)
+    return dict(model=result['model'], score=result['score'], clusters=result['clusters'])
 
 
 if __name__ == "__main__":
     iris_clusters()
     # assert cluster_iris_dataset_again() is not None
     # assert cluster_amazon_video_game() is not None
-    # assert cluster_amazon_video_game_again() is not None
+    assert cluster_amazon_video_game_again() is not None
     assert cluster_life_expectancy() is not None
