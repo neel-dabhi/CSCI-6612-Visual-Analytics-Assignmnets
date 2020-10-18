@@ -153,7 +153,32 @@ def cluster_amazon_video_game_again() -> Dict:
     Once again, don't worry about the clustering technique implementation, but do analyse the data/result and check if the clusters makes sense.
     """
 
-    return dict(model=None, score=None, clusters=None)
+    df = process_amazon_video_game_dataset_again()
+    # dropping time col
+    df = df.drop(columns=['time'])
+    # removing all the products which are rated only once.
+    df = df[df.duplicated(subset=['asin'], keep=False)]
+    # removing all the users who just rated one product.
+    df = df[df.duplicated(subset=['user'], keep=False)]
+    # Removing Neutral reviews
+    df = df[df['review'] != 3]
+
+    le = generate_label_encoder(df['asin'])
+    df = replace_with_label_encoder(df, 'asin', le)
+
+    # Group by user to know how many products they have reviewed and what is the mean rating they give
+    df = df.groupby(by='user', as_index=False).agg(
+        {'asin': np.count_nonzero, 'review': np.mean})
+
+    df.drop(columns='user', inplace=True)
+
+    """
+    Here I am trying to cluster users who has given similar amount of rating with similar mean rating.
+    this type of clustering can be used in e-commerce.
+    """
+    result = custom_clustering(df.iloc[:50000, :])
+
+    return dict(model=result['model'], score=result['score'], clusters=result['clusters'])
 
 
 def cluster_life_expectancy() -> Dict:
@@ -191,4 +216,4 @@ if __name__ == "__main__":
     # assert cluster_iris_dataset_again() is not None
     # assert cluster_amazon_video_game() is not None
     assert cluster_amazon_video_game_again() is not None
-    assert cluster_life_expectancy() is not None
+    # assert cluster_life_expectancy() is not None

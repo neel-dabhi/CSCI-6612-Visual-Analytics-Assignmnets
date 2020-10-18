@@ -85,9 +85,13 @@ def random_forest_iris_dataset_again() -> Dict:
     Feel free to change your e_experimentation code (changes there will not be considered for grading
     purposes) to optimise the model (e.g. score, parameters, etc).
     """
+    """
+    Accuracy of this model is very high compare to above reusing_code_random_forest_on_iris which is zero.
+    because, the data coming from process_iris_dataset_again() is not encoded.
+    """
     df = process_iris_dataset_again()
     X, y = df.iloc[:, :4], df.iloc[:, 4]
-
+    print(simple_random_forest_classifier(X, y))
     return simple_random_forest_classifier(X, y)
 
 
@@ -128,6 +132,9 @@ def train_iris_dataset_again() -> Dict:
     dt = decision_tree_classifier(X, y)
     rf = simple_random_forest_classifier(X, y)
 
+    """
+    Accuracy of both the model is almost the same.
+    """
     if dt['accuracy'] > rf['accuracy']:
         return dt
     else:

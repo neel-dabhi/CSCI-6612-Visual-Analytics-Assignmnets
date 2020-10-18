@@ -164,7 +164,6 @@ def train_amazon_video_game() -> Dict:
     Also, it implies that the model does not follow any trend with the data,
     and the regression line of our model is worse then the mean line. 
     """
-
     if dtr['score'] > rfr['score']:
         return dtr
     else:
@@ -244,8 +243,8 @@ def your_choice() -> Dict:
     rfr = simple_random_forest_regressor(X, y)
 
     """
-    here the accuracy increases for the iris data set compared to train_iris_dataset_again()
-    even generalizing a data bit.
+     Outcome:   here the accuracy increases for the iris data set compared to train_iris_dataset_again()
+                even generalizing a data bit.
     """
 
     if dtr['score'] > rfr['score']:
