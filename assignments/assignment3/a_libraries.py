@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -106,7 +107,10 @@ def matplotlib_bar_chart(x: np.array) -> Tuple:
     Create a matplotlib bar chart with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.bar(range(0, len(x)), x)
+    return fig, ax
 
 
 def matplotlib_pie_chart(x: np.array) -> Tuple:
@@ -114,7 +118,10 @@ def matplotlib_pie_chart(x: np.array) -> Tuple:
     Create a matplotlib pie chart with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    fig, ax = plt.subplots()
+    ax.axis('equal')
+    ax.pie(abs(x), labels=range(0, len(x)))
+    return fig, ax
 
 
 def matplotlib_histogram(x: np.array, n_bins: int) -> Tuple:
@@ -123,6 +130,12 @@ def matplotlib_histogram(x: np.array, n_bins: int) -> Tuple:
     Return the fig and ax as was shown in matplotlib_line_example.
     Note that a histogram is the distribution of the data as a bar chart split in bins
     """
+    fig, ax = plt.subplots()
+    plt.hist(x, bins=n_bins)
+    plt.show()
+    print(fig)
+    print(ax)
+    return fig, ax
     pass
 
 
@@ -182,7 +195,9 @@ def plotly_bar_chart(df: pd.DataFrame):
     Create a plotly bar chart with the inputs. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    print(df)
+    fig = px.bar(df)
+    return fig
 
 
 def plotly_pie_chart(df: pd.DataFrame):
@@ -191,7 +206,8 @@ def plotly_pie_chart(df: pd.DataFrame):
     Create a plotly pie chart with the inputs. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    fig = px.pie(df, values='x')
+    return fig
 
 
 def plotly_histogram(df: pd.DataFrame, n_bins: int):
@@ -200,7 +216,8 @@ def plotly_histogram(df: pd.DataFrame, n_bins: int):
     Create a plotly histogram chart with the inputs. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    fig = px.histogram(df, x="x", nbins=n_bins)
+    return fig
 
 
 def plotly_polar_chart(df: pd.DataFrame):
@@ -219,7 +236,8 @@ def plotly_heatmap_chart(df: pd.DataFrame):
     Create a plotly heatmap chart with the inputs. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    fig = px.imshow(df)
+    return fig
 
 
 def plotly_table(df: pd.DataFrame):
@@ -229,7 +247,18 @@ def plotly_table(df: pd.DataFrame):
     Create a plotly table with the input. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    fig = go.Figure(data=[go.Table(
+        header=dict(values=df.columns,
+                    line_color='darkslategray',
+                    fill_color='lightskyblue',
+                    align='left'),
+        cells=dict(values=df.T,
+                   line_color='darkslategray',
+                   fill_color='lightcyan',
+                   align='left'))
+    ])
+
+    return fig
 
 
 def plotly_contour_chart(df: pd.DataFrame):
@@ -240,7 +269,12 @@ def plotly_contour_chart(df: pd.DataFrame):
     DO NOT PLOT IT!!
     Return the fig only.
     """
-    pass
+    fig = go.Figure(data=
+                    go.Contour(z=df.iloc[:, 0],
+                               x=df.iloc[:, 1],
+                               y=df.iloc[:, 2]
+                               ))
+    return fig
 
 
 def plotly_composite_line_bar(df: pd.DataFrame):
@@ -250,6 +284,25 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
+
+    print(df)
+
+    fig = go.Figure()
+
+    df_sorted = df.sort_values(by=['x', 'y'])
+
+    fig.add_trace(
+        go.Scatter(
+            x=df_sorted['x'],
+            y=df_sorted['y']
+        ))
+
+    fig.add_trace(
+        go.Bar(
+            x=df_sorted['x'],
+            y=df_sorted['y'], width=.008
+        ))
+
     pass
 
 
@@ -260,7 +313,25 @@ def plotly_subgraphs(df: pd.DataFrame):
     stacked area plots respectively) and place each of the at each quadrant (e.g. top-left,
     top-right, etc), and then output a single fig. DO NOT PLOT IT!!
     """
-    pass
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=("Line", "Bar", "Scatter", "Area"))
+
+    df_sorted_line = df.sort_values(by=['x1', 'y1'])
+
+    fig.add_trace(go.Scatter(x=df_sorted_line['x1'], y=df_sorted_line['y1'], mode='lines', name='Line'), row=1, col=1)
+
+    fig.add_trace(go.Scatter(x=df['x2'], y=df['y2'], mode='markers', name='Scatter'), row=2, col=1)
+
+    fig.add_trace(go.Bar(x=df['x3'].index, y=df['x3'], name='Bar'), row=1, col=2)
+
+    df_sorted_area = df.sort_values(by=['x4', 'y4'])
+    fig.add_trace(go.Scatter(x=df_sorted_area['x4'], y=df_sorted_area['y4'], mode='lines', fill='tozeroy', name='Area'), row=2, col=2)
+
+    fig.update_layout(height=500, width=700,
+                      title_text="Multiple Subplots with Titles")
+
+    return fig
 
 
 if __name__ == "__main__":
@@ -284,7 +355,8 @@ if __name__ == "__main__":
     matplotlib_subgraphs(fig1, fig2, fig3, fig4)
 
     df = pd.DataFrame(dict(x=x, y=y, z=x + y))
-    df_matrix = pd.DataFrame(matrix_2D, columns=[f'grade of class {x}' for x in range(10)], index=[f'professor {x}' for x in range(10)])
+    df_matrix = pd.DataFrame(matrix_2D, columns=[f'grade of class {x}' for x in range(10)],
+                             index=[f'professor {x}' for x in range(10)])
     plotly_bar_chart(df)
     plotly_pie_chart(df)
     plotly_histogram(df, 5)
@@ -293,8 +365,9 @@ if __name__ == "__main__":
     plotly_table(df_matrix)
     plotly_contour_chart(df_matrix)
     plotly_composite_line_bar(df)
-    plotly_subgraphs(pd.DataFrame(dict(x1=np.random.rand(50) * np.random.randint(-10, 10), y1=np.random.rand(50) * np.random.randint(-10, 10),
-                                       x2=np.random.rand(50) * np.random.randint(-10, 10), y2=np.random.rand(50) * np.random.randint(-10, 10),
-                                       x3=np.random.rand(50) * np.random.randint(-10, 10), y3=np.random.rand(50) * np.random.randint(-10, 10),
-                                       x4=np.random.rand(50) * np.random.randint(-10, 10), y4=np.random.rand(50) * np.random.randint(-10, 10),
-                                       )))
+    plotly_subgraphs(pd.DataFrame(
+        dict(x1=np.random.rand(50) * np.random.randint(-10, 10), y1=np.random.rand(50) * np.random.randint(-10, 10),
+             x2=np.random.rand(50) * np.random.randint(-10, 10), y2=np.random.rand(50) * np.random.randint(-10, 10),
+             x3=np.random.rand(50) * np.random.randint(-10, 10), y3=np.random.rand(50) * np.random.randint(-10, 10),
+             x4=np.random.rand(50) * np.random.randint(-10, 10), y4=np.random.rand(50) * np.random.randint(-10, 10),
+             )))
