@@ -1,5 +1,4 @@
 from typing import Tuple
-
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import numpy as np
@@ -118,8 +117,8 @@ def matplotlib_pie_chart(x: np.array) -> Tuple:
     Create a matplotlib pie chart with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    fig, ax = plt.subplots()
-    ax.axis('equal')
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1])
     ax.pie(abs(x), labels=range(0, len(x)))
     return fig, ax
 
@@ -130,13 +129,10 @@ def matplotlib_histogram(x: np.array, n_bins: int) -> Tuple:
     Return the fig and ax as was shown in matplotlib_line_example.
     Note that a histogram is the distribution of the data as a bar chart split in bins
     """
+
     fig, ax = plt.subplots()
     plt.hist(x, bins=n_bins)
-    plt.show()
-    print(fig)
-    print(ax)
     return fig, ax
-    pass
 
 
 def matplotlib_polar_chart(x: np.array, y: np.array) -> Tuple:
@@ -145,7 +141,15 @@ def matplotlib_polar_chart(x: np.array, y: np.array) -> Tuple:
     The y input is the same as the line chart, so you need to convert it to an angle.
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    # converting y into degree
+    zero, two_pi = 0, 360
+    y_min, y_max = y.min(), y.max()
+    y = (y - y_min) / (y_max - y_min) * (two_pi - zero) + zero
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='polar')
+    ax.plot(y, x)
+    return fig, ax
 
 
 def matplotlib_heatmap_chart(matrix: np.array) -> Tuple:
@@ -154,7 +158,10 @@ def matplotlib_heatmap_chart(matrix: np.array) -> Tuple:
     The input is a 2D matrix (x, y). See example at the end of file.
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.imshow(matrix)
+    return fig, ax
 
 
 def matplotlib_table(matrix: np.array) -> Tuple:
@@ -162,7 +169,18 @@ def matplotlib_table(matrix: np.array) -> Tuple:
     Create a matplotlib table with the input. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.table(
+        cellText=matrix.round(decimals=2),
+        rowLabels=range(np.size(matrix, 0)),
+        colLabels=range(np.size(matrix, 1)),
+        rowColours=["cyan"] * 10,
+        colColours=["cyan"] * 10,
+        cellLoc='center',
+        loc='upper left')
+
+    return fig, ax
 
 
 def matplotlib_composite_line_bar(x: np.array) -> Tuple:
@@ -172,7 +190,13 @@ def matplotlib_composite_line_bar(x: np.array) -> Tuple:
     DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    pass
+    df = pd.DataFrame(x)
+
+    fig = plt.figure()
+    ax = fig.add_axes(df[0].plot(kind='bar', width=0.3))
+    df[0].plot(secondary_y=True, xlim=ax.get_xlim())
+
+    return fig, ax
 
 
 def matplotlib_subgraphs(fig1, fig2, fig3, fig4) -> Tuple:
@@ -181,6 +205,16 @@ def matplotlib_subgraphs(fig1, fig2, fig3, fig4) -> Tuple:
     top-right, etc) has one of them, and output a single fig and ax with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
+    fig, ax = plt.subplots(2, 2)
+    # print(fig1.get_data())
+    # ax[0, 0] = fig.add_subplot(fig1)
+    ax[0, 0] = fig1.axes
+    # ax[1, 0].plot(fig2, 'b')
+    # ax[0, 1].plot(fig3, 'g')
+    # ax[1, 1].plot(fig4, 'k')
+
+    plt.show()
+
     pass
 
 
@@ -227,7 +261,13 @@ def plotly_polar_chart(df: pd.DataFrame):
     The y input is the same as the line chart, so you need to convert it to an angle.
     Return the fig only. Feel free to choose between px and go.
     """
-    pass
+    # converting y into degree
+    zero, two_pi = 0, 360
+    x, y = df['y'].min(), df['y'].max()
+    df['y'] = (df['y'] - x) / (y - x) * (two_pi - zero) + zero
+
+    fig = px.scatter_polar(df, r="x", theta="y")
+    return fig
 
 
 def plotly_heatmap_chart(df: pd.DataFrame):
@@ -284,26 +324,12 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-
-    print(df)
-
     fig = go.Figure()
-
     df_sorted = df.sort_values(by=['x', 'y'])
+    fig.add_trace(go.Scatter(x=df_sorted['x'], y=df_sorted['y']))
+    fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.008))
 
-    fig.add_trace(
-        go.Scatter(
-            x=df_sorted['x'],
-            y=df_sorted['y']
-        ))
-
-    fig.add_trace(
-        go.Bar(
-            x=df_sorted['x'],
-            y=df_sorted['y'], width=.008
-        ))
-
-    pass
+    return fig
 
 
 def plotly_subgraphs(df: pd.DataFrame):
@@ -315,7 +341,7 @@ def plotly_subgraphs(df: pd.DataFrame):
     """
     fig = make_subplots(
         rows=2, cols=2,
-        subplot_titles=("Line", "Bar", "Scatter", "Area"))
+        subplot_titles=("Line", "Bar", "Scatter", "Area"), template='plotly_dark')
 
     df_sorted_line = df.sort_values(by=['x1', 'y1'])
 
@@ -326,7 +352,8 @@ def plotly_subgraphs(df: pd.DataFrame):
     fig.add_trace(go.Bar(x=df['x3'].index, y=df['x3'], name='Bar'), row=1, col=2)
 
     df_sorted_area = df.sort_values(by=['x4', 'y4'])
-    fig.add_trace(go.Scatter(x=df_sorted_area['x4'], y=df_sorted_area['y4'], mode='lines', fill='tozeroy', name='Area'), row=2, col=2)
+    fig.add_trace(go.Scatter(x=df_sorted_area['x4'], y=df_sorted_area['y4'], mode='lines', fill='tozeroy', name='Area'),
+                  row=2, col=2)
 
     fig.update_layout(height=500, width=700,
                       title_text="Multiple Subplots with Titles")
