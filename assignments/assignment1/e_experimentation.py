@@ -87,11 +87,12 @@ def process_iris_dataset_again() -> pd.DataFrame:
     # happens as normalization will bring values between 0 & 1
     df['large_sepal_lenght'] = df["sepal_length"] > 5.0
 
+
     # Fixing data before normalization as we need scaled data
     for nc in numeric_columns:
-        df = fix_outliers(df, nc)
         df = fix_nans(df, nc)
         df.loc[:, nc] = normalize_column(df.loc[:, nc])
+
 
     # # Label Encoding
     # for cc in categorical_columns:
@@ -216,7 +217,7 @@ def process_life_expectancy_dataset():
 
     # Dropping all columns except country, continent, year, value and latitude
     # eight_regions as continent because it gives more accurate position of country on the globe
-    df_merged = df_merged[['country','value', 'eight_regions', 'year', 'Latitude']]
+    df_merged = df_merged[['country', 'value', 'eight_regions', 'year', 'Latitude', ]]
     df_merged = df_merged.rename(columns={'eight_regions': 'continent'})
 
     # Changing the latitude column from numerical to categorical
@@ -230,6 +231,8 @@ def process_life_expectancy_dataset():
     # one hot encoding of continent
     ohe = generate_one_hot_encoder(df_merged['continent'])
     df_oh_encoded = replace_with_one_hot_encoder(df_le_encoded, 'continent', ohe, list(ohe.get_feature_names()))
+
+    df_oh_encoded['value'] = pd.to_numeric(df_oh_encoded['value'])
 
     return df_oh_encoded
 

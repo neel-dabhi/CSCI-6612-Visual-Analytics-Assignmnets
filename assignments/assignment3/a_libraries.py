@@ -108,7 +108,7 @@ def matplotlib_bar_chart(x: np.array) -> Tuple:
     """
     fig = plt.figure()
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.bar(range(0, len(x)), x)
+    ax.bar(range(len(x)), x)
     return fig, ax
 
 
@@ -158,8 +158,8 @@ def matplotlib_heatmap_chart(matrix: np.array) -> Tuple:
     The input is a 2D matrix (x, y). See example at the end of file.
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1])
+
+    fig, ax = plt.subplots()
     ax.imshow(matrix)
     return fig, ax
 

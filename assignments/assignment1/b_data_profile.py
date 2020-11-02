@@ -59,14 +59,14 @@ def get_column_number_of_duplicates(df: pd.DataFrame, column_name: str) -> float
 
 
 def get_numeric_columns(df: pd.DataFrame) -> List[str]:
+    df = df[df.columns.difference(get_binary_columns(df))]
     cols = df.select_dtypes([np.number]).columns
     return cols.tolist()
 
 
 def get_binary_columns(df: pd.DataFrame) -> List[str]:
-    cols = df.apply(lambda col: True if len(col.dropna().unique()) == 2 else False)
-    cols = cols[cols == True]
-    return cols.index
+    cols = df.columns[df.isin([0, 1]).all()]
+    return cols.tolist()
 
 
 def get_text_categorical_columns(df: pd.DataFrame) -> List[str]:
@@ -78,7 +78,8 @@ def get_correlation_between_columns(df: pd.DataFrame, col1: str, col2: str) -> f
     Calculate and return the pearson correlation between two columns
     """
     numerator = np.sum((df[col1] - df[col1].mean()) * (df[col2] - df[col2].mean()))
-    denominator = np.sqrt(np.sum((df[col1] - df[col1].mean()) ** 2)) * np.sqrt(np.sum((df[col2] - df[col2].mean()) ** 2))
+    denominator = np.sqrt(np.sum((df[col1] - df[col1].mean()) ** 2)) * np.sqrt(
+        np.sum((df[col2] - df[col2].mean()) ** 2))
     return numerator / denominator
 
 

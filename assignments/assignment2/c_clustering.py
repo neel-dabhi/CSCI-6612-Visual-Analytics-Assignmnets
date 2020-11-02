@@ -117,11 +117,12 @@ def cluster_iris_dataset_again() -> Dict:
     from moving avg point, it does not consider how intensely similar the features are. 
     """
     df = process_iris_dataset_again()
+
     df.drop(columns=['large_sepal_lenght'], inplace=True)
     ohe = generate_one_hot_encoder(df['species'])
     df = replace_with_one_hot_encoder(df, 'species', ohe, list(ohe.get_feature_names()))
+
     result = custom_clustering(df, eps=0.25, min_samples=3)
-    print(dict(model=result['model'], score=result['score'], clusters=result['clusters']))
     return dict(model=result['model'], score=result['score'], clusters=result['clusters'])
 
 
