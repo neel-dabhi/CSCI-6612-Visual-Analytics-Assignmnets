@@ -164,7 +164,7 @@ def dash_task():
     4. A https://dash-bootstrap-components.opensource.faculty.ai/docs/components/card/ with the number of rows being showed on the above graph
     5. Another visualization with:
         a. It will containing the figure created in the tasks in a_, b_ or c_ related to plotly's figures
-        b. Add a dropdown for me to choose among 3 (or more if you wish) different graphs from a_, b_ or c_ (choose the ones you like)
+        b. Add a dropdown for me to choose among 3 (or more if you wish) different grap hs from a_, b_ or c_ (choose the ones you like)
         c. In this visualization, if I select data in the visualization, update some text in the page (can be a new bootstrap card with text inside)
             with the number of values selected. (see https://dash.plotly.com/interactive-graphing for examples)
     """
@@ -174,7 +174,7 @@ def dash_task():
     all_options = {
         'iris': ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species'],
         'video_game': ['user', 'asin', 'review'],
-        'life_expectancy': ['value', 'country', 'year', 'Latitude', 'Longitude']
+        'life_expectancy': ['value', 'country', 'ns']
     }
 
     app.layout = dbc.Container([
@@ -182,29 +182,50 @@ def dash_task():
         html.Div(children='Dash: A web application framework for Python.'),
         html.Hr(),
 
-        dbc.FormGroup([
-            dbc.Label("Choose Dataset"),
-            dcc.Dropdown(
-                id='dataset-dropdown',
-                options=[{'label': k, 'value': k} for k in all_options.keys()],
-                value='iris',
-                multi=False,
-                style={'width': "40%"}
-            ), ]
-        ),
+        html.Div([
+            html.Div([
+                html.H3('Dataset Visualization'),
+                dbc.FormGroup([
+                    dbc.Label("Choose Dataset"),
+                    dcc.Dropdown(
+                        id='dataset-dropdown',
+                        options=[{'label': k, 'value': k} for k in all_options.keys()],
+                        value='iris',
+                        multi=False,
+                        style={'width': "60%"}
+                    ), ]
+                ),
+                dbc.FormGroup([
+                    dbc.Label("Choose Column X"),
+                    dcc.Dropdown(id='colx-dropdown', style={'width': "60%"}), ]
+                ),
+                dbc.FormGroup([
+                    dbc.Label("Choose Column Y"),
+                    dcc.Dropdown(id='coly-dropdown', style={'width': "60%"}), ]
+                ),
+                dbc.FormGroup([
+                    dbc.Label("Choose Graph"),
+                    dcc.Dropdown(id='graph-dropdown',
+                                 options=[
+                                     {'label': 'Line', 'value': 'line'},
+                                     {'label': 'Scatter', 'value': 'scatter'},
+                                     {'label': 'Bar', 'value': 'bar'},
+                                 ],
+                                 value='scatter',
+                                 style={'width': "60%"}), ]
+                ),
+                html.Div(id='display-selected-values',
+                         style={"font-weight": "bold", "text-align": "center", }),
+                html.Br(),
+                dcc.Graph(id='first-visulization', figure={}),
+            ], className="two columns", style={'width': '50%'}),
 
-        dbc.FormGroup([
-            dbc.Label("Choose Column X"),
-            dcc.Dropdown(id='colx-dropdown'), ]
-        ),
-        dbc.FormGroup([
-            dbc.Label("Choose Column Y"),
-            dcc.Dropdown(id='coly-dropdown'), ]
-        ),
+            html.Div([
+                html.H3('Column 2'),
 
-        html.Div(id='display-selected-values')
-        # html.Br(),
-        # dcc.Graph(id='first-visulization', figure={})
+            ], className="six columns"),
+        ], className="row")
+
     ])
 
     @app.callback(
@@ -235,11 +256,50 @@ def dash_task():
         Output('display-selected-values', 'children'),
         [Input('dataset-dropdown', 'value'),
          Input('colx-dropdown', 'value'),
-         Input('coly-dropdown', 'value')])
-    def set_display_children(selected_dataset, selected_colx, selected_coly):
-        return u'{},{} is a col in {}'.format(
-            selected_colx, selected_coly, selected_dataset
+         Input('coly-dropdown', 'value'),
+         Input('graph-dropdown', 'value')])
+    def set_display_children(selected_dataset, selected_colx, selected_coly, graph):
+        return u'Visualization for {} and {} of dataset {} using {} graph'.format(
+            selected_colx, selected_coly, selected_dataset, graph
         )
+
+    @app.callback(
+        Output('first-visulization', 'figure'),
+        [Input('dataset-dropdown', 'value'),
+         Input('colx-dropdown', 'value'),
+         Input('coly-dropdown', 'value'),
+         Input('graph-dropdown', 'value')])
+    def update_graph(dataset, colx, coly, graph):
+
+        if dataset == 'iris':
+            df = read_dataset('../../iris.csv')
+
+        if dataset == 'video_game':
+            df = read_dataset('../../ratings_Video_Games.csv')
+            df = df[:3000]
+
+        if dataset == 'life_expectancy':
+            df = read_dataset('processed_le.csv')
+
+        if graph == 'scatter':
+            fig = go.Figure(data=go.Scatter(x=df[colx], y=df[coly], mode='markers'))
+
+        if graph == 'line':
+            fig = go.Figure(data=go.Scatter(x=df[colx], y=df[coly], mode='lines'))
+
+        if graph == 'bar':
+            fig = go.Figure(data=go.Bar(x=df[colx], y=df[coly]))
+
+        fig.update_layout(
+            xaxis_title=colx,
+            yaxis_title=coly,
+        )
+
+        return fig
+
+    app.css.append_css({
+        'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+    })
 
     return app
 
