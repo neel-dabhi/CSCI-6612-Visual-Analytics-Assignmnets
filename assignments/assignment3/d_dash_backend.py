@@ -12,13 +12,15 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-
 ##############################################
 # Now let's use dash, a library built on top of flask (a backend framework for python) and plotly
 # Check the documentation at https://dash.plotly.com/
 # For a complete example, check https://dash-bootstrap-components.opensource.faculty.ai/examples/iris/
 # Example(s). Read the comments in the following method(s)
 ##############################################
+from assignments.assignment1.a_load_file import read_dataset
+
+
 def dash_simple_example():
     """
     Here is a simple example from https://dash.plotly.com/layout
@@ -104,7 +106,8 @@ def dash_callback_example():
         html.Hr(),
         dbc.FormGroup([
             dbc.Label("Choose Dataset"),
-            dcc.Dropdown(id="dropdown", value=1, options=[{"label": "First Data", "value": 1}, {"label": "Second Data", "value": 2}]),
+            dcc.Dropdown(id="dropdown", value=1,
+                         options=[{"label": "First Data", "value": 1}, {"label": "Second Data", "value": 2}]),
         ]),
         dbc.FormGroup([
             dbc.Label(id='slider-value'),
@@ -112,15 +115,20 @@ def dash_callback_example():
         ]),
         dbc.Button('Run Callback', id='example-button', color='primary', style={'margin-bottom': '1em'}, block=True),
         dbc.Row([
-            dbc.Col(dcc.Graph(id='example-graph')),  # Not including fig here because it will be generated with the callback
+            dbc.Col(dcc.Graph(id='example-graph')),
+            # Not including fig here because it will be generated with the callback
         ])
     ])
 
     @app.callback(  # See documentation or tutorial to see how to use this
-        Output('example-graph', 'figure'),  # Outputs is what you wish to update with the callback, which in this case is the figure
-        [Input('example-button', 'n_clicks')],  # Use inputs to define when this callback is called, and read from the values in the inputs as parameters in the method
-        [State('dropdown', 'value'),  # Use states to read values from the interface, but values only in states will not trigger the callback when changed
-         State('slider', 'value')])  # For example, here if you change the slider, this method will not be called, it will only be called when you click the button
+        Output('example-graph', 'figure'),
+        # Outputs is what you wish to update with the callback, which in this case is the figure
+        [Input('example-button', 'n_clicks')],
+        # Use inputs to define when this callback is called, and read from the values in the inputs as parameters in the method
+        [State('dropdown', 'value'),
+         # Use states to read values from the interface, but values only in states will not trigger the callback when changed
+         State('slider',
+               'value')])  # For example, here if you change the slider, this method will not be called, it will only be called when you click the button
     def update_figure(n_clicks, dropdown_value, slider_value):
         df2 = df[:]
         df2.Amount = df2.Amount * slider_value
@@ -160,7 +168,80 @@ def dash_task():
         c. In this visualization, if I select data in the visualization, update some text in the page (can be a new bootstrap card with text inside)
             with the number of values selected. (see https://dash.plotly.com/interactive-graphing for examples)
     """
-    return None
+
+    app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+    all_options = {
+        'iris': ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species'],
+        'video_game': ['user', 'asin', 'review'],
+        'life_expectancy': ['value', 'country', 'year', 'Latitude', 'Longitude']
+    }
+
+    app.layout = dbc.Container([
+        html.H1(children='My Dash'),
+        html.Div(children='Dash: A web application framework for Python.'),
+        html.Hr(),
+
+        dbc.FormGroup([
+            dbc.Label("Choose Dataset"),
+            dcc.Dropdown(
+                id='dataset-dropdown',
+                options=[{'label': k, 'value': k} for k in all_options.keys()],
+                value='iris',
+                multi=False,
+                style={'width': "40%"}
+            ), ]
+        ),
+
+        dbc.FormGroup([
+            dbc.Label("Choose Column X"),
+            dcc.Dropdown(id='colx-dropdown'), ]
+        ),
+        dbc.FormGroup([
+            dbc.Label("Choose Column Y"),
+            dcc.Dropdown(id='coly-dropdown'), ]
+        ),
+
+        html.Div(id='display-selected-values')
+        # html.Br(),
+        # dcc.Graph(id='first-visulization', figure={})
+    ])
+
+    @app.callback(
+        Output('colx-dropdown', 'options'),
+        [Input('dataset-dropdown', 'value')])
+    def set_cities_options(selected_dataset):
+        return [{'label': i, 'value': i} for i in all_options[selected_dataset]]
+
+    @app.callback(
+        Output('coly-dropdown', 'options'),
+        [Input('dataset-dropdown', 'value')])
+    def set_cities_options(selected_dataset):
+        return [{'label': i, 'value': i} for i in all_options[selected_dataset]]
+
+    @app.callback(
+        Output('colx-dropdown', 'value'),
+        [Input('colx-dropdown', 'options')])
+    def set_cities_value(available_options):
+        return available_options[0]['value']
+
+    @app.callback(
+        Output('coly-dropdown', 'value'),
+        [Input('coly-dropdown', 'options')])
+    def set_cities_value(available_options):
+        return available_options[0]['value']
+
+    @app.callback(
+        Output('display-selected-values', 'children'),
+        [Input('dataset-dropdown', 'value'),
+         Input('colx-dropdown', 'value'),
+         Input('coly-dropdown', 'value')])
+    def set_display_children(selected_dataset, selected_colx, selected_coly):
+        return u'{},{} is a col in {}'.format(
+            selected_colx, selected_coly, selected_dataset
+        )
+
+    return app
 
 
 if __name__ == "__main__":

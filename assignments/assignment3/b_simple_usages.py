@@ -103,6 +103,7 @@ def plotly_scatter_plot_chart():
     iris dataset. Choose among the numeric values to be the x and y coordinates.
     """
     clustering_iris = cluster_iris_dataset_again()
+    print(clustering_iris)
     df = read_dataset('../../iris.csv')
     fig = px.scatter(df, x="sepal_width", y="sepal_length", color=clustering_iris['clusters'])
 

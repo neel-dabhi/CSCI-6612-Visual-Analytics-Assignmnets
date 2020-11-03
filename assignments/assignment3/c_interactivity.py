@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from matplotlib.widgets import Button, Slider
 
+from assignments.assignment3.b_simple_usages import *
+
 
 ###############
 # Interactivity in visualizations is challenging due to limitations and clunkiness of libraries.
@@ -150,15 +152,18 @@ def plotly_button_example():
                  buttons=[
                      dict(
                          label="line",  # just the name of the button
-                         method="update",  # This is the method of update (check https://plotly.com/python/custom-buttons/)
+                         method="update",
+                         # This is the method of update (check https://plotly.com/python/custom-buttons/)
                          args=[{"mode": "markers"}],  # This is the value being updated in the visualization
                      ), dict(
                          label="scatter",  # just the name of the button
-                         method="update",  # This is the method of update (check https://plotly.com/python/custom-buttons/)
+                         method="update",
+                         # This is the method of update (check https://plotly.com/python/custom-buttons/)
                          args=[{"mode": "line"}],  # This is the value being updated in the visualization
                      )
                  ],
-                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"  # Layout-related values
+                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"
+                 # Layout-related values
                  ),
         ]
     )
@@ -194,6 +199,61 @@ def plotly_interactivity():
     Do a plotly graph with all plotly 6 figs from b_simple_usages, and make 6 buttons (one for each fig).
     Change the displayed graph depending on which button I click. Return just the resulting fig.
     """
+    fig_p_s = plotly_scatter_plot_chart()
+    fig_p_bpc = plotly_bar_plot_chart()
+    fig_p_psc = plotly_polar_scatterplot_chart()
+    fig_p_clb = plotly_composite_line_bar()
+    fig_p_map = plotly_map()
+    fig_p_treemap = plotly_tree_map()
+
+    figs = [fig_p_s, fig_p_bpc, fig_p_psc, fig_p_clb, fig_p_map, fig_p_treemap]
+
+    fig = go.Figure()
+
+    N = 1000
+    t = np.linspace(0, 10, 100)
+    y = np.sin(t)
+    animals = ['giraffes', 'orangutans', 'monkeys']
+
+    fig.add_scatter(go.Figure(go.Scatter(x=t, y=y, mode='markers')))
+    fig.add_bar(go.Figure([go.Bar(x=animals, y=[20, 14, 23])]))
+
+    # Add dropdown
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=list([
+                    dict(
+                        args=["type", "bar"],
+                        label="3D Surface",
+                        method="relayout"
+                    ),
+                    dict(
+                        args=["type", "scatter"],
+                        label="Heatmap",
+                        method="relayout"
+                    )
+                ]),
+                pad={"r": 10, "t": 10},
+                showactive=True,
+                x=0.11,
+                xanchor="left",
+                y=1.1,
+                yanchor="top"
+            ),
+        ]
+    )
+
+    fig.update_layout(
+        annotations=[
+            dict(text="Trace type:", showarrow=False,
+                 x=0, y=1.08, yref="paper", align="left")
+        ]
+    )
+
+    fig.show()
     return None
 
 
@@ -205,7 +265,7 @@ if __name__ == "__main__":
     # run, and graded accordingly.
     fig_m_i = matplotlib_interactivity()
     fig_m_ci = matplotlib_cluster_interactivity()
-    fig_p =  plotly_interactivity()
+    fig_p = plotly_interactivity()
 
     # Uncomment the below lines to test your code
     # When submitting, leave the code below commented!!!
