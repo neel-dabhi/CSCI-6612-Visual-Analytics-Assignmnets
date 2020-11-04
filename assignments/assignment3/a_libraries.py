@@ -328,7 +328,7 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     df_sorted = df.sort_values(by=['x', 'y'])
     fig.add_trace(go.Scatter(x=df_sorted['x'], y=df_sorted['y']))
     fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.008))
-
+    fig.show()
     return fig
 
 

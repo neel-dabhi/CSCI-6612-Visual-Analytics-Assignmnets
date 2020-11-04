@@ -179,19 +179,24 @@ def dash_task():
     }
 
     app.layout = dbc.Container([
+        dbc.Row([
+            dbc.Col([
+                dbc.NavbarSimple(
+                    brand="MyDash",
+                    brand_href="#",
+                    color="dark",
+                    dark=True,
+                    style={"width": "100%"}
+                ),
+            ], width=12),
 
-        dbc.NavbarSimple(
-            brand="MyDash",
-            brand_href="#",
-            color="dark",
-            dark=True,
-            style={"width": "100%"}
-        ),
+        ], ),
 
         html.Br(),
         dbc.Row([
             dbc.Col([
                 html.H3('Dataset Visualization'),
+                html.Br(),
                 # row1
                 html.Div([
                     html.Div([
@@ -228,14 +233,14 @@ def dash_task():
                     html.Div([
                         dbc.FormGroup([
                             dbc.Label("Choose Column X"),
-                            dcc.Dropdown(id='colx-dropdown'), ]
+                            dcc.Dropdown(id='colx-dropdown', )], style={'width': "100%"}
                         ),
                     ], className='col-md-2', ),
 
                     html.Div([
                         dbc.FormGroup([
                             dbc.Label("Choose Column Y"),
-                            dcc.Dropdown(id='coly-dropdown', ), ]
+                            dcc.Dropdown(id='coly-dropdown', ), ], style={'width': "100%"}
                         ),
                     ], className='col-md-2', ),
 
@@ -245,34 +250,59 @@ def dash_task():
                     dbc.Alert(id='display-row-count', color="primary"),
                     style={"font-weight": "normal", 'width': '80%'}),
                 html.Br(),
-
-                dcc.Graph(id='first-visualization', figure={}),
-            ],className="m-8"),
+                dbc.Card([
+                    dcc.Graph(id='first-visualization', figure={}),
+                ], color="secondary", outline=True, style={"border": "2px solid grey"}, className="w-100"),
+            ], width=6),
 
             dbc.Col([
                 html.H3('Clicked Data'),
-                dbc.FormGroup([
-                    dbc.Label("Choose Visualization"),
-                    dcc.Dropdown(
-                        id='vis-dropdown',
-                        options=[
-                            {'label': 'Plotly Map', 'value': 'map'},
-                            {'label': 'Plotly Tree Map', 'value': 'tree-map'},
-                            {'label': 'Plotly Polar Scatter', 'value': 'polar-scatter'},
-                        ],
-                        value='map',
-                        multi=False,
-                        style={'width': "60%"}
-                    ), ]
-                ),
+                html.Br(),
                 html.Div([
-                    dbc.Alert('Nothing Selected', id='click-data', style={'width': '80%'}),
-                ], className='columns'),
-                dcc.Graph(id='second-visualization', figure={})
-            ],),
-        ], )
+                    dbc.FormGroup([
+                        dbc.Label("Choose Visualization"),
+                        dcc.Dropdown(
+                            id='vis-dropdown',
+                            options=[
+                                {'label': 'Plotly Map', 'value': 'map'},
+                                {'label': 'Plotly Tree Map', 'value': 'tree-map'},
+                                {'label': 'Plotly Polar Scatter', 'value': 'polar-scatter'},
+                            ],
+                            value='map',
+                            multi=False,
+                            style={'width': "80%"}
+                        ), ]),
+                ]),
 
-    ], className="w-100", )
+                html.Div([
+                    dbc.FormGroup([
+                        dbc.Label("Choose Visualization"),
+                        dcc.Dropdown(
+                            id='vis2-dropdown',
+                            options=[
+                                {'label': 'Plotly Map', 'value': 'map'},
+                                {'label': 'Plotly Tree Map', 'value': 'tree-map'},
+                                {'label': 'Plotly Polar Scatter', 'value': 'polar-scatter'},
+                            ],
+                            value='map',
+                            multi=False,
+                            style={'width': "80%"},
+
+                        ), ]),
+                ], className="invisible"),
+
+                html.Div([
+                    dbc.Alert('Click on visualization to change me :)', id='click-data', color="primary",
+                              style={'width': '80%'}),
+                ], className='columns'),
+                html.Br(),
+                dbc.Card([
+                    dcc.Graph(id='second-visualization', figure={})
+                ], color="secondary", outline=True, style={"border": "2px solid grey"}, className="w-100"),
+            ], width=6),
+        ], justify="between")
+
+    ], style={"display": "flex", "flex-direction": "column", "justify-content": "space-between"}, )
 
     @app.callback(
         Output('second-visualization', 'figure'),
@@ -292,14 +322,15 @@ def dash_task():
         [Input('second-visualization', 'clickData'), Input('vis-dropdown', 'value')])
     def display_click_data(clickData, vis_value):
         if vis_value == 'map':
-            return "Country: " + str(clickData['points'][0]['location'])
+            return "Life Expectancy value of " + str(clickData['points'][0]['location']) + " is " + str(
+                clickData['points'][0]['z'])
 
         if vis_value == 'tree-map':
             return "Level: " + str(clickData['points'][0]['label'])
 
         if vis_value == 'polar-scatter':
-            return "Theta: " + str(clickData['points'][0]['theta']) + " and Value: " + str(
-                clickData['points'][0]['r'])
+            return "Theta: " + str(round(clickData['points'][0]['theta'], 3)) + " and Value: " + str(
+                round(clickData['points'][0]['r'], 3))
 
     @app.callback(
         Output('colx-dropdown', 'options'),
