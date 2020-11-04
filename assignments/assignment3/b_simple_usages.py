@@ -199,7 +199,7 @@ def plotly_polar_scatterplot_chart():
 
     df_merged['bearing'] = abs(np.degrees((np.arctan2(X, Y)) + 360) % 360)
 
-    fig = px.scatter_polar(df_merged, r='value', theta='bearing', color='country', template="plotly_dark")
+    fig = px.scatter_polar(df_merged, r='value', theta='bearing',)
     return fig
 
 
@@ -286,6 +286,7 @@ def plotly_tree_map():
     df.reset_index(drop=True, inplace=True)
     fig = px.treemap(df, path=['year', 'country'], values='value',
                      color='value', hover_data=['country'],
+                     maxdepth=2,
                      color_continuous_scale='RdBu',
                      color_continuous_midpoint=np.average(df['value'], weights=df['value']))
 

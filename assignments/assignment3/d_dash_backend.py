@@ -1,5 +1,5 @@
 from typing import Tuple
-
+import json
 import dash
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,7 @@ import dash_bootstrap_components as dbc
 # Example(s). Read the comments in the following method(s)
 ##############################################
 from assignments.assignment1.a_load_file import read_dataset
+from assignments.assignment3.b_simple_usages import plotly_map, plotly_tree_map, plotly_polar_scatterplot_chart
 
 
 def dash_simple_example():
@@ -178,55 +179,123 @@ def dash_task():
     }
 
     app.layout = dbc.Container([
-        html.H1(children='My Dash'),
-        html.Div(children='Dash: A web application framework for Python.'),
-        html.Hr(),
 
+        dbc.NavbarSimple(
+            brand="MyDash",
+            brand_href="#",
+            color="dark",
+            dark=True,
+            style={"width": "100%"}
+        ),
+        html.Br(),
         html.Div([
             html.Div([
                 html.H3('Dataset Visualization'),
+                html.Div([
+                    html.Div([
+                        dbc.FormGroup([
+                            dbc.Label("Choose Dataset"),
+                            dcc.Dropdown(
+                                id='dataset-dropdown',
+                                options=[{'label': k, 'value': k} for k in all_options.keys()],
+                                value='iris',
+                                multi=False,
+                                style={'width': "100%"}
+                            ), ]
+                        ),
+                    ], className='col-md-2', ),
+
+                    html.Div([
+                        dbc.FormGroup([
+                            dbc.Label("Choose Graph"),
+                            dcc.Dropdown(id='graph-dropdown',
+                                         options=[
+                                             {'label': 'Line', 'value': 'line'},
+                                             {'label': 'Scatter', 'value': 'scatter'},
+                                             {'label': 'Bar', 'value': 'bar'},
+                                         ],
+                                         value='scatter',
+                                         style={'width': "100%"}), ]
+                        ),
+                    ], className='col-md-2', ),
+
+                ], className='row', style={'width': "200%"}),
+
+                html.Div([
+                    html.Div([
+                        dbc.FormGroup([
+                            dbc.Label("Choose Column X"),
+                            dcc.Dropdown(id='colx-dropdown'), ]
+                        ),
+                    ], className='col-md-2', ),
+
+                    html.Div([
+                        dbc.FormGroup([
+                            dbc.Label("Choose Column Y"),
+                            dcc.Dropdown(id='coly-dropdown', ), ]
+                        ),
+                    ], className='col-md-2', ),
+
+                ], className='row', style={'width': "200%"}),
+                html.Div(
+                    dbc.Alert(id='display-row-count', color="primary"),
+                    style={"font-weight": "normal", 'width': '70%'}),
+                html.Br(),
+
+                dcc.Graph(id='first-visualization', figure={})],
+                className="card border-dark mb-3"),
+
+            html.Div([
+                html.H3('Clicked Data'),
                 dbc.FormGroup([
-                    dbc.Label("Choose Dataset"),
+                    dbc.Label("Choose Visualization"),
                     dcc.Dropdown(
-                        id='dataset-dropdown',
-                        options=[{'label': k, 'value': k} for k in all_options.keys()],
-                        value='iris',
+                        id='vis-dropdown',
+                        options=[
+                            {'label': 'Plotly Map', 'value': 'map'},
+                            {'label': 'Plotly Tree Map', 'value': 'tree-map'},
+                            {'label': 'Plotly Polar Scatter', 'value': 'polar-scatter'},
+                        ],
+                        value='map',
                         multi=False,
                         style={'width': "60%"}
                     ), ]
                 ),
-                dbc.FormGroup([
-                    dbc.Label("Choose Column X"),
-                    dcc.Dropdown(id='colx-dropdown', style={'width': "60%"}), ]
-                ),
-                dbc.FormGroup([
-                    dbc.Label("Choose Column Y"),
-                    dcc.Dropdown(id='coly-dropdown', style={'width': "60%"}), ]
-                ),
-                dbc.FormGroup([
-                    dbc.Label("Choose Graph"),
-                    dcc.Dropdown(id='graph-dropdown',
-                                 options=[
-                                     {'label': 'Line', 'value': 'line'},
-                                     {'label': 'Scatter', 'value': 'scatter'},
-                                     {'label': 'Bar', 'value': 'bar'},
-                                 ],
-                                 value='scatter',
-                                 style={'width': "60%"}), ]
-                ),
-                html.Div(id='display-selected-values',
-                         style={"font-weight": "bold", "text-align": "center", }),
-                html.Br(),
-                dcc.Graph(id='first-visulization', figure={}),
-            ], className="two columns", style={'width': '50%'}),
+                html.Div([
+                    dbc.Alert('Nothing Selected', id='click-data'),
+                ], className='three columns'),
+                dcc.Graph(id='second-visualization', figure={})
+            ], className="six columns", style={'width': '50%'}),
+        ], className="row", style={'width': '100%'})
 
-            html.Div([
-                html.H3('Column 2'),
+    ], style={'padding': 0})
 
-            ], className="six columns"),
-        ], className="row")
+    @app.callback(
+        Output('second-visualization', 'figure'),
+        [Input('vis-dropdown', 'value')])
+    def set_cities_value(vis_value):
+        if vis_value == 'map':
+            return plotly_map()
 
-    ])
+        if vis_value == 'tree-map':
+            return plotly_tree_map()
+
+        if vis_value == 'polar-scatter':
+            return plotly_polar_scatterplot_chart()
+
+    @app.callback(
+        Output('click-data', 'children'),
+        [Input('second-visualization', 'clickData'), Input('vis-dropdown', 'value')])
+    def display_click_data(clickData, vis_value):
+        if vis_value == 'map':
+            return "Country: " + str(clickData['points'][0]['location'])
+
+        if vis_value == 'tree-map':
+            return "Level: " + str(clickData['points'][0]['label'])
+
+        if vis_value == 'polar-scatter':
+            return "Theta: " + str(clickData['points'][0]['theta']) + " and Value: " + str(
+                clickData['points'][0]['r'])
 
     @app.callback(
         Output('colx-dropdown', 'options'),
@@ -253,18 +322,26 @@ def dash_task():
         return available_options[0]['value']
 
     @app.callback(
-        Output('display-selected-values', 'children'),
-        [Input('dataset-dropdown', 'value'),
-         Input('colx-dropdown', 'value'),
-         Input('coly-dropdown', 'value'),
-         Input('graph-dropdown', 'value')])
-    def set_display_children(selected_dataset, selected_colx, selected_coly, graph):
-        return u'Visualization for {} and {} of dataset {} using {} graph'.format(
-            selected_colx, selected_coly, selected_dataset, graph
-        )
+        Output('display-row-count', 'children'),
+        [Input('dataset-dropdown', 'value')])
+    def set_display_children(dataset):
+        if dataset == 'iris':
+            df = read_dataset('../../iris.csv')
+            row = df.shape[0]
+
+        if dataset == 'video_game':
+            df = read_dataset('../../ratings_Video_Games.csv')
+            df = df[:3000]
+            row = df.shape[0]
+
+        if dataset == 'life_expectancy':
+            df = read_dataset('processed_le.csv')
+            row = df.shape[0]
+
+        return u'# Row displayed: {} '.format(row)
 
     @app.callback(
-        Output('first-visulization', 'figure'),
+        Output('first-visualization', 'figure'),
         [Input('dataset-dropdown', 'value'),
          Input('colx-dropdown', 'value'),
          Input('coly-dropdown', 'value'),
