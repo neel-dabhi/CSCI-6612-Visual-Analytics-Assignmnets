@@ -181,7 +181,7 @@ def dash_task():
     app.layout = dbc.Container([
 
         dbc.NavbarSimple(
-            brand="MyDash",
+            brand="SunDash",
             brand_href="#",
             color="dark",
             dark=True,
@@ -242,8 +242,8 @@ def dash_task():
                     style={"font-weight": "normal", 'width': '70%'}),
                 html.Br(),
 
-                dcc.Graph(id='first-visualization', figure={})],
-                className="card border-dark mb-3"),
+                dcc.Graph(id='first-visualization', figure={}),
+            ], className="two columns", style={'width': '50%'}),
 
             html.Div([
                 html.H3('Clicked Data'),
