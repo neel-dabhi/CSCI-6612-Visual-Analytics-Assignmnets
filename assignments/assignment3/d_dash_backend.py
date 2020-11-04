@@ -179,18 +179,24 @@ def dash_task():
     }
 
     app.layout = dbc.Container([
-        dbc.Row([
-            dbc.Col([
-                dbc.NavbarSimple(
-                    brand="MyDash",
-                    brand_href="#",
-                    color="dark",
-                    dark=True,
-                    style={"width": "100%"}
+        dbc.Navbar(
+            [
+                html.A(
+                    dbc.Row(
+                        [
+                            dbc.Col(html.Img(src="https://www.flaticon.com/svg/static/icons/svg/1828/1828533.svg", height="30px")),
+                            dbc.Col(dbc.NavbarBrand("MyDash", className="font-weight-bold", style={})),
+                        ],
+                        align="center",
+                        no_gutters=True,
+                    ),
+                    href="https://plot.ly",
                 ),
-            ], width=12),
-
-        ], ),
+                dbc.NavbarToggler(id="navbar-toggler"),
+            ],
+            color="secondary",
+            dark=True,
+        ),
 
         html.Br(),
         dbc.Row([
@@ -244,8 +250,7 @@ def dash_task():
                         ),
                     ], className='col-md-2', ),
 
-                ], className='row', style={'width': "200%"}),
-
+                ], className='row', style={'width': "200%"}, ),
                 html.Div(
                     dbc.Alert(id='display-row-count', color="primary"),
                     style={"font-weight": "normal", 'width': '80%'}),
