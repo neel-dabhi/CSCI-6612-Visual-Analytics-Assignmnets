@@ -181,16 +181,18 @@ def dash_task():
     app.layout = dbc.Container([
 
         dbc.NavbarSimple(
-            brand="SunDash",
+            brand="MyDash",
             brand_href="#",
             color="dark",
             dark=True,
             style={"width": "100%"}
         ),
+
         html.Br(),
-        html.Div([
-            html.Div([
+        dbc.Row([
+            dbc.Col([
                 html.H3('Dataset Visualization'),
+                # row1
                 html.Div([
                     html.Div([
                         dbc.FormGroup([
@@ -221,6 +223,7 @@ def dash_task():
 
                 ], className='row', style={'width': "200%"}),
 
+                # row2
                 html.Div([
                     html.Div([
                         dbc.FormGroup([
@@ -237,15 +240,16 @@ def dash_task():
                     ], className='col-md-2', ),
 
                 ], className='row', style={'width': "200%"}),
+
                 html.Div(
                     dbc.Alert(id='display-row-count', color="primary"),
-                    style={"font-weight": "normal", 'width': '70%'}),
+                    style={"font-weight": "normal", 'width': '80%'}),
                 html.Br(),
 
                 dcc.Graph(id='first-visualization', figure={}),
-            ], className="two columns", style={'width': '50%'}),
+            ],className="m-8"),
 
-            html.Div([
+            dbc.Col([
                 html.H3('Clicked Data'),
                 dbc.FormGroup([
                     dbc.Label("Choose Visualization"),
@@ -262,13 +266,13 @@ def dash_task():
                     ), ]
                 ),
                 html.Div([
-                    dbc.Alert('Nothing Selected', id='click-data'),
-                ], className='three columns'),
+                    dbc.Alert('Nothing Selected', id='click-data', style={'width': '80%'}),
+                ], className='columns'),
                 dcc.Graph(id='second-visualization', figure={})
-            ], className="six columns", style={'width': '50%'}),
-        ], className="row", style={'width': '100%'})
+            ],),
+        ], )
 
-    ], style={'padding': 0})
+    ], className="w-100", )
 
     @app.callback(
         Output('second-visualization', 'figure'),
