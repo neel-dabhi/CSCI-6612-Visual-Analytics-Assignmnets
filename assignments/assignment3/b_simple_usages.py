@@ -137,6 +137,7 @@ def plotly_bar_plot_chart():
                                                df.where(df['clusters'] == 2)['species'].str.count('virginica').sum()])
     ])
     fig.update_layout(barmode='group')
+    fig.show()
     return fig
 
 
@@ -209,10 +210,10 @@ def plotly_table():
     See https://plotly.com/python/table/ for documentation
     """
     results = your_choice_a()
-
+    print(results)
     fig = go.Figure(data=[go.Table(header=dict(values=['test_prediction']),
                                    cells=dict(values=[results['test_prediction']]))])
-
+    fig.show()
     return fig
 
 

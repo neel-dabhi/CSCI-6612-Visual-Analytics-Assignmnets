@@ -59,8 +59,8 @@ def matplotlib_simple_example():
 
     callback = Index()
     axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
-    axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
-    bnext = Button(axnext, 'Next')
+    ax_bar = plt.axes([0.81, 0.05, 0.1, 0.075])
+    bnext = Button(ax_bar, 'Next')
     bnext.on_clicked(callback.next)
     bprev = Button(axprev, 'Previous')
     bprev.on_clicked(callback.prev)
@@ -96,9 +96,9 @@ def matplotlib_simple_example2():
 
     callback = Index()
     axprev = plt.axes([0.1, 0.05, 0.12, 0.075])
-    axnext = plt.axes([0.23, 0.05, 0.12, 0.075])
+    ax_bar = plt.axes([0.23, 0.05, 0.12, 0.075])
     axslider = plt.axes([0.55, 0.1, 0.35, 0.03])
-    bnext = Button(axnext, 'Next')
+    bnext = Button(ax_bar, 'Next')
     bnext.on_clicked(lambda event: callback.change_data(event, 1))
     bprev = Button(axprev, 'Previous')
     bprev.on_clicked(lambda event: callback.change_data(event, -1))
@@ -125,7 +125,6 @@ def plotly_slider_example():
                      range_y=[25, 90])
 
     fig["layout"].pop("updatemenus")  # optional, drop animation buttons
-
     return fig
 
 
@@ -182,7 +181,54 @@ def matplotlib_interactivity():
     Make either a slider, a dropdown or several buttons and make so each option gives me a different visualization from
     the matplotlib figures of b_simple_usages. Return just the resulting fig as is done in plotly_slider_example.
     """
-    return None
+
+    data = np.random.rand(10, 5)
+
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.2)
+    df = read_dataset('../../iris.csv')
+    df_bar = df[get_numeric_columns(df)]
+    df_bar = df_bar.max()
+    data_pie = [len(get_numeric_columns(df)), len(get_binary_columns(df)), len(get_text_categorical_columns(df))]
+
+    ax.bar(range(df_bar.shape[0]), df_bar)
+
+    class Index(object):
+        ind = 0
+
+        def bar(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.bar(range(df_bar.shape[0]), df_bar)
+            plt.draw()
+
+        def pie(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.pie(np.array(data_pie), labels=range(0, len(data_pie)))
+            plt.draw()
+
+        def hm(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.imshow(df.corr(method='pearson'))
+            plt.draw()
+
+    callback = Index()
+    ax_bar = plt.axes([0.1, 0.05, 0.12, 0.075])
+    ax_pie = plt.axes([0.23, 0.05, 0.12, 0.075])
+    ax_hm = plt.axes([0.36, 0.05, 0.12, 0.075])
+
+    button_bar = Button(ax_bar, 'Bar')
+    button_bar.on_clicked(lambda event: callback.bar(event, 1))
+
+    button_pie = Button(ax_pie, "Pie")
+    button_pie.on_clicked(lambda event: callback.pie(event, 1))
+
+    button_hm = Button(ax_hm, "Heat map")
+    button_hm.on_clicked(lambda event: callback.hm(event, 1))
+
+    return fig
 
 
 def matplotlib_cluster_interactivity():
@@ -199,61 +245,7 @@ def plotly_interactivity():
     Do a plotly graph with all plotly 6 figs from b_simple_usages, and make 6 buttons (one for each fig).
     Change the displayed graph depending on which button I click. Return just the resulting fig.
     """
-    fig_p_s = plotly_scatter_plot_chart()
-    fig_p_bpc = plotly_bar_plot_chart()
-    fig_p_psc = plotly_polar_scatterplot_chart()
-    fig_p_clb = plotly_composite_line_bar()
-    fig_p_map = plotly_map()
-    fig_p_treemap = plotly_tree_map()
 
-    figs = [fig_p_s, fig_p_bpc, fig_p_psc, fig_p_clb, fig_p_map, fig_p_treemap]
-
-    fig = go.Figure()
-
-    N = 1000
-    t = np.linspace(0, 10, 100)
-    y = np.sin(t)
-    animals = ['giraffes', 'orangutans', 'monkeys']
-
-    fig.add_scatter(go.Figure(go.Scatter(x=t, y=y, mode='markers')))
-    fig.add_bar(go.Figure([go.Bar(x=animals, y=[20, 14, 23])]))
-
-    # Add dropdown
-    fig.update_layout(
-        updatemenus=[
-            dict(
-                type="buttons",
-                direction="left",
-                buttons=list([
-                    dict(
-                        args=["type", "bar"],
-                        label="3D Surface",
-                        method="relayout"
-                    ),
-                    dict(
-                        args=["type", "scatter"],
-                        label="Heatmap",
-                        method="relayout"
-                    )
-                ]),
-                pad={"r": 10, "t": 10},
-                showactive=True,
-                x=0.11,
-                xanchor="left",
-                y=1.1,
-                yanchor="top"
-            ),
-        ]
-    )
-
-    fig.update_layout(
-        annotations=[
-            dict(text="Trace type:", showarrow=False,
-                 x=0, y=1.08, yref="paper", align="left")
-        ]
-    )
-
-    fig.show()
     return None
 
 
