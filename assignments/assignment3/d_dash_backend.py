@@ -178,27 +178,29 @@ def dash_task():
         'life_expectancy': ['value', 'country', 'ns']
     }
 
-    app.layout = dbc.Container([
+    app.layout = html.Div([
         dbc.Navbar(
             [
                 html.A(
                     dbc.Row(
                         [
-                            dbc.Col(html.Img(src="https://www.flaticon.com/svg/static/icons/svg/1828/1828533.svg", height="30px")),
+                            dbc.Col(html.Img(src="https://images.plot.ly/logo/new-branding/plotly-logomark.png",
+                                             height="30px")),
                             dbc.Col(dbc.NavbarBrand("MyDash", className="font-weight-bold", style={})),
                         ],
                         align="center",
                         no_gutters=True,
                     ),
-                    href="https://plot.ly",
+                    href="#",
                 ),
                 dbc.NavbarToggler(id="navbar-toggler"),
-            ],
-            color="secondary",
+            ], className="w-100",
+            color="dark",
             dark=True,
         ),
 
         html.Br(),
+
         dbc.Row([
             dbc.Col([
                 html.H3('Dataset Visualization'),
@@ -253,7 +255,7 @@ def dash_task():
                 ], className='row', style={'width': "200%"}, ),
                 html.Div(
                     dbc.Alert(id='display-row-count', color="primary"),
-                    style={"font-weight": "normal", 'width': '80%'}),
+                    style={"font-weight": "normal", "display": "inline-block"}),
                 html.Br(),
                 dbc.Card([
                     dcc.Graph(id='first-visualization', figure={}),
@@ -291,23 +293,23 @@ def dash_task():
                             ],
                             value='map',
                             multi=False,
-                            style={'width': "80%"},
+                            style={'width': "80%", "border-radius": "5px 5px 5px 5px"},
 
                         ), ]),
                 ], className="invisible"),
 
                 html.Div([
                     dbc.Alert('Click on visualization to change me :)', id='click-data', color="primary",
-                              style={'width': '80%'}),
+                              style={"display": "inline-block"}),
                 ], className='columns'),
-                html.Br(),
                 dbc.Card([
                     dcc.Graph(id='second-visualization', figure={})
                 ], color="secondary", outline=True, style={"border": "2px solid grey"}, className="w-100"),
+                html.Br(),
             ], width=6),
-        ], justify="between")
+        ], justify="center", style={'margin-left': '7%', 'margin-right': '7%'})
 
-    ], style={"display": "flex", "flex-direction": "column", "justify-content": "space-between"}, )
+    ], style={'background-color': '#f3f2ef'})
 
     @app.callback(
         Output('second-visualization', 'figure'),
