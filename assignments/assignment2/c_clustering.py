@@ -29,7 +29,7 @@ Clustering is a non-supervised form of machine learning. It uses unlabeled data
 ##############################################
 def simple_k_means(X: pd.DataFrame, n_clusters=3, score_metric='euclidean') -> Dict:
     model = KMeans(n_clusters=n_clusters)
-    clusters = model.fit_transform(X)
+    clusters = model.fit_predict(X)
 
     # There are many methods of deciding a score of a cluster model. Here is one example:
     score = metrics.silhouette_score(X, model.labels_, metric=score_metric)
