@@ -267,8 +267,10 @@ def matplotlib_cluster_interactivity():
             df['results'] = result["clusters"]
 
             for cluster_number in df['results'].unique():
-                ax.scatter(df[df['results'] == cluster_number]['petal_length'], df[df['results'] == cluster_number]['petal_width'])
-                ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(), df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'],
+                           df[df['results'] == cluster_number]['petal_width'])
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(),
+                           df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
 
             ax.set_xlabel('petal_length')
             ax.set_ylabel('petal_width')
@@ -290,6 +292,79 @@ def plotly_interactivity():
     Do a plotly graph with all plotly 6 figs from b_simple_usages, and make 6 buttons (one for each fig).
     Change the displayed graph depending on which button I click. Return just the resulting fig.
     """
+
+    allfigs = {'scatterplot': plotly_scatter_plot_chart(), 'barplot': plotly_bar_plot_chart(),
+               'groupbar': plotly_bar_plot_chart(),
+               'scatterpolar': plotly_polar_scatterplot_chart(),
+               'linebar': plotly_composite_line_bar(), 'map': plotly_map()}
+
+    visibility = {'scatterplot': False, 'barplot': False,
+                  'groupbar': False,
+                  'scatterpolar': False,
+                  'linebar': False, 'map': False}
+
+    fig = go.Figure()
+
+    fig.update_layout(
+        updatemenus=[
+            dict(type="buttons",
+                 direction="left",
+                 buttons=[
+                     dict(
+                         label="Scatter Plot",
+                         method="update",
+                         args=[{"visible": ''}],
+                     ),
+                     dict(
+                         label="Bar Plot",
+                         method="update",
+                         args=[{"visible": ''}],
+                     ),
+                     dict(
+                         label="Grouped Bar",
+                         method="update",
+                         args=[{"visible": ''}],
+                     ),
+                     dict(
+                         label="Scatter Polar",
+                         method="update",
+                         args=[{"visible": ''}],
+                     ),
+                     dict(
+                         label="Line Bar",
+                         method="update",
+                         args=[{"visible": ''}],
+                     ), dict(
+                         label="Map",
+                         method="update",
+                         args=[{"visible": True}],
+                     ),
+
+                 ],
+                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"
+                 # Layout-related values
+                 ),
+        ]
+    )
+
+    for key, value in allfigs.items():
+        if key == 'map':
+            for trace in range(len(value.data)):
+                value.update_traces({'visible': visibility[key]})
+
+        elif key in ['scatterplot', 'barplot', 'groupbar', 'linebar']:
+            for trace in range(len(value.data)):
+                value.update_traces({'visible': visibility[key]})
+
+        elif key == 'scatterpolar':
+            for trace in range(len(value.data)):
+                value.update_traces({'visible': visibility[key]})
+
+        for trace in range(len(value.data)):
+            print("adding trace of ", key)
+            fig.add_trace(value.data[trace])
+
+    fig.show()
 
     return None
 

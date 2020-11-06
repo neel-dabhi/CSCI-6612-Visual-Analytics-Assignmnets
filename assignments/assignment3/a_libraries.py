@@ -31,7 +31,6 @@ def matplotlib_line_sin_example():
     ax.set(xlabel='time (s)', ylabel='voltage (mV)',
            title='About as simple as it gets, folks')
     ax.grid()
-    plt.show()
 
 
 def matplotlib_line_example(array_x: np.array, array_y: np.array) -> Tuple:
@@ -51,7 +50,6 @@ def matplotlib_line_example2():
     fig, ax = matplotlib_line_example(np.array([1, 2, 3, 4, 5]), np.array([5, 3, 5, 3, 5]))
     ax.set(xlabel='some linear list', ylabel='another list changing values', title='Another example')
     ax.grid()
-    plt.show()
 
 
 ###############
@@ -147,8 +145,9 @@ def matplotlib_polar_chart(x: np.array, y: np.array) -> Tuple:
     y = (y - y_min) / (y_max - y_min) * (two_pi - zero) + zero
 
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='polar')
-    ax.plot(y, x)
+    ax = fig.add_subplot(111, projection='polar', )
+    ax.scatter(y, x)
+    plt.show()
     return fig, ax
 
 
@@ -205,15 +204,6 @@ def matplotlib_subgraphs(fig1, fig2, fig3, fig4) -> Tuple:
     top-right, etc) has one of them, and output a single fig and ax with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    fig, ax = plt.subplots(2, 2)
-    # print(fig1.get_data())
-    # ax[0, 0] = fig.add_subplot(fig1)
-    ax[0, 0] = fig1.axes
-    # ax[1, 0].plot(fig2, 'b')
-    # ax[0, 1].plot(fig3, 'g')
-    # ax[1, 1].plot(fig4, 'k')
-
-    plt.show()
 
     pass
 
@@ -229,7 +219,6 @@ def plotly_bar_chart(df: pd.DataFrame):
     Create a plotly bar chart with the inputs. DO NOT PLOT IT!!
     Return the fig only. Feel free to choose between px and go.
     """
-    print(df)
     fig = px.bar(df)
     return fig
 
@@ -328,7 +317,6 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     df_sorted = df.sort_values(by=['x', 'y'])
     fig.add_trace(go.Scatter(x=df_sorted['x'], y=df_sorted['y']))
     fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.008))
-    fig.show()
     return fig
 
 
@@ -341,7 +329,7 @@ def plotly_subgraphs(df: pd.DataFrame):
     """
     fig = make_subplots(
         rows=2, cols=2,
-        subplot_titles=("Line", "Bar", "Scatter", "Area"), template='plotly_dark')
+        subplot_titles=("Line", "Bar", "Scatter", "Area"))
 
     df_sorted_line = df.sort_values(by=['x1', 'y1'])
 
