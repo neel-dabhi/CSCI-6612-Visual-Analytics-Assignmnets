@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from matplotlib.widgets import Button, Slider
 
+from assignments.assignment2.c_clustering import simple_k_means
 from assignments.assignment3.b_simple_usages import *
 
 
@@ -237,7 +238,51 @@ def matplotlib_cluster_interactivity():
     Use iris dataset (just numeric columns) and k-means (feel free to reuse as/c_clustering if you wish).
     The slider (or dropdown) should range from 2 to 10. Return just the resulting fig.
     """
-    return None
+
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.2)
+    df = read_dataset('../../iris.csv')
+    df = df[['petal_length', 'petal_width']]
+
+    result = simple_k_means(df, 2)
+    df['results'] = result["clusters"]
+
+    for cluster_number in df['results'].unique():
+        ax.scatter(df[df['results'] == cluster_number]['petal_length'],
+                   df[df['results'] == cluster_number]['petal_width'])
+        ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(),
+                   df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
+
+    ax.set_xlabel('petal_length')
+    ax.set_ylabel('petal_width')
+    ax.set_title('Clustering based on petal_length and petal_width')
+
+    class Index(object):
+        ind = 0
+
+        def change_clusters(self, value):
+            self.multiplier = round(value)
+            ax.clear()
+            result = simple_k_means(df, self.multiplier)
+            df['results'] = result["clusters"]
+
+            for cluster_number in df['results'].unique():
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'], df[df['results'] == cluster_number]['petal_width'])
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(), df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
+
+            ax.set_xlabel('petal_length')
+            ax.set_ylabel('petal_width')
+            ax.set_title('Clustering based on petal_length and petal_width')
+            plt.draw()
+
+    callback = Index()
+
+    axslider = plt.axes([0.55, 0.05, 0.35, 0.03])
+
+    slider = Slider(axslider, 'Number of clusters', 2, 10, 1)
+    slider.on_changed(callback.change_clusters)
+
+    return fig
 
 
 def plotly_interactivity():
