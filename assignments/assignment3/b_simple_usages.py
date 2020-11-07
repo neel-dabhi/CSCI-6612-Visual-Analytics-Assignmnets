@@ -33,14 +33,14 @@ from assignments.assignment3.a_libraries import matplotlib_bar_chart as matplotl
     matplotlib_pie_chart as matplotlib_pie_chart_a, \
     matplotlib_heatmap_chart as matplotlib_heatmap_chart_a, plotly_polar_chart as plotly_polar_chart_a
 
-pd.set_option('display.max_columns', 100)
-
 
 def matplotlib_bar_chart() -> Tuple:
     """
     Create a bar chart with a1/b_data_profile's get column max.
     Show the max of each numeric column from iris dataset as the bars
     """
+    # There wont be legends and titles as I am reusing the code in this file.
+    # I have confirmed this with leonardo
     df = read_dataset('../../iris.csv')
     df = df[get_numeric_columns(df)]
     df = df.max()
@@ -121,20 +121,21 @@ def plotly_bar_plot_chart():
     df['clusters'] = pd.Series(clustering_iris['clusters'])
     df = df.loc[df['clusters'] > -1]
 
-    species = ['setosa', 'versicolor', 'virginica']
+    species = ['cluster 0', 'cluster 1', 'cluster 2']
     fig = go.Figure(data=[
-        go.Bar(name='cluster 0', x=species, y=[df.where(df['clusters'] == 0)['species'].str.count('setosa').sum(),
-                                               df.where(df['clusters'] == 0)['species'].str.count('versicolor').sum(),
-                                               df.where(df['clusters'] == 0)['species'].str.count('virginica').sum()]),
+        go.Bar(name='setosa', x=species, y=[df.where(df['clusters'] == 0)['species'].str.count('setosa').sum(),
+                                            df.where(df['clusters'] == 0)['species'].str.count('versicolor').sum(),
+                                            df.where(df['clusters'] == 0)['species'].str.count('virginica').sum()]),
 
-        go.Bar(name='cluster 1', x=species, y=[df.where(df['clusters'] == 1)['species'].str.count('setosa').sum(),
-                                               df.where(df['clusters'] == 1)['species'].str.count('versicolor').sum(),
-                                               df.where(df['clusters'] == 1)['species'].str.count('virginica').sum()]),
+        go.Bar(name='versicolor', x=species, y=[df.where(df['clusters'] == 1)['species'].str.count('setosa').sum(),
+                                                df.where(df['clusters'] == 1)['species'].str.count('versicolor').sum(),
+                                                df.where(df['clusters'] == 1)['species'].str.count('virginica').sum()]),
 
-        go.Bar(name='cluster 2', x=species, y=[df.where(df['clusters'] == 2)['species'].str.count('setosa').sum(),
+        go.Bar(name='virginica', x=species, y=[df.where(df['clusters'] == 2)['species'].str.count('setosa').sum(),
                                                df.where(df['clusters'] == 2)['species'].str.count('versicolor').sum(),
                                                df.where(df['clusters'] == 2)['species'].str.count('virginica').sum()])
     ])
+
     fig.update_layout(barmode='group')
     return fig
 
@@ -198,7 +199,7 @@ def plotly_polar_scatterplot_chart():
 
     df_merged['bearing'] = abs(np.degrees((np.arctan2(X, Y)) + 360) % 360)
 
-    fig = px.scatter_polar(df_merged, r='value', theta='bearing',)
+    fig = px.scatter_polar(df_merged, r='value', theta='bearing', )
     return fig
 
 
@@ -208,8 +209,10 @@ def plotly_table():
     See https://plotly.com/python/table/ for documentation
     """
     results = your_choice_a()
-    fig = go.Figure(data=[go.Table(header=dict(values=['test_prediction']),
-                                   cells=dict(values=[results['test_prediction']]))])
+    fig = go.Figure(data=[go.Table(header=dict(values=['X_test', 'y_test', 'test_prediction']),
+                                   cells=dict(
+                                       values=[results['X_test'], results['y_test'], results['test_prediction']]))])
+    fig.show()
     return fig
 
 

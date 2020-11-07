@@ -106,7 +106,7 @@ def matplotlib_bar_chart(x: np.array) -> Tuple:
     """
     fig = plt.figure()
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.bar(range(len(x)), x)
+    ax.bar(range(len(x)), x,)
     return fig, ax
 
 
@@ -127,7 +127,6 @@ def matplotlib_histogram(x: np.array, n_bins: int) -> Tuple:
     Return the fig and ax as was shown in matplotlib_line_example.
     Note that a histogram is the distribution of the data as a bar chart split in bins
     """
-
     fig, ax = plt.subplots()
     plt.hist(x, bins=n_bins)
     return fig, ax
@@ -141,13 +140,14 @@ def matplotlib_polar_chart(x: np.array, y: np.array) -> Tuple:
     """
     # converting y into degree
     zero, two_pi = 0, 360
+    x = abs(x)
+    y = abs(y)
     y_min, y_max = y.min(), y.max()
     y = (y - y_min) / (y_max - y_min) * (two_pi - zero) + zero
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='polar', )
     ax.scatter(y, x)
-    plt.show()
     return fig, ax
 
 
@@ -157,7 +157,6 @@ def matplotlib_heatmap_chart(matrix: np.array) -> Tuple:
     The input is a 2D matrix (x, y). See example at the end of file.
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-
     fig, ax = plt.subplots()
     ax.imshow(matrix)
     return fig, ax
@@ -194,7 +193,6 @@ def matplotlib_composite_line_bar(x: np.array) -> Tuple:
     fig = plt.figure()
     ax = fig.add_axes(df[0].plot(kind='bar', width=0.3))
     df[0].plot(secondary_y=True, xlim=ax.get_xlim())
-
     return fig, ax
 
 
@@ -286,7 +284,6 @@ def plotly_table(df: pd.DataFrame):
                    fill_color='lightcyan',
                    align='left'))
     ])
-
     return fig
 
 

@@ -313,55 +313,54 @@ def plotly_interactivity():
                      dict(
                          label="Scatter Plot",
                          method="update",
-                         args=[{"visible": ''}],
+                         args=[{"visible": [True, False, False, False, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, False]}],
                      ),
                      dict(
                          label="Bar Plot",
                          method="update",
-                         args=[{"visible": ''}],
+                         args=[{"visible": [False, True, True, True, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, False]}],
                      ),
                      dict(
                          label="Grouped Bar",
                          method="update",
-                         args=[{"visible": ''}],
+                         args=[{"visible": [False, False, False, False, True,
+                                            True, True, False, False, False,
+                                            False, False, False, False, False]}],
                      ),
                      dict(
                          label="Scatter Polar",
                          method="update",
-                         args=[{"visible": ''}],
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, True, False, False,
+                                            False, False, False, False, False]}],
                      ),
                      dict(
                          label="Line Bar",
                          method="update",
-                         args=[{"visible": ''}],
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, False, True, True,
+                                            True, True, True, True, False]}],
                      ), dict(
                          label="Map",
                          method="update",
-                         args=[{"visible": True}],
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, True]}],
                      ),
 
                  ],
                  pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"
-                 # Layout-related values
                  ),
         ]
     )
 
     for key, value in allfigs.items():
-        if key == 'map':
-            for trace in range(len(value.data)):
-                value.update_traces({'visible': visibility[key]})
-
-        elif key in ['scatterplot', 'barplot', 'groupbar', 'linebar']:
-            for trace in range(len(value.data)):
-                value.update_traces({'visible': visibility[key]})
-
-        elif key == 'scatterpolar':
-            for trace in range(len(value.data)):
-                value.update_traces({'visible': visibility[key]})
-
         for trace in range(len(value.data)):
-            print("adding trace of ", key)
+            value = value.update_traces()
             fig.add_trace(value.data[trace])
 
     fig.show()

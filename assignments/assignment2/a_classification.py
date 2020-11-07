@@ -38,7 +38,7 @@ def simple_random_forest_classifier(X: pd.DataFrame, y: pd.Series) -> Dict:
     model.fit(X_train, y_train)
     y_predict = model.predict(X_test)  # Use this line to get the prediction from the model
     accuracy = model.score(X_test, y_test)
-    return dict(model=model, accuracy=accuracy, test_prediction=y_predict)
+    return dict(model=model, accuracy=accuracy, test_prediction=y_predict,X_test=X_test ,y_test=y_test)
 
 
 def simple_random_forest_on_iris() -> Dict:
@@ -113,7 +113,7 @@ def decision_tree_classifier(X: pd.DataFrame, y: pd.Series) -> Dict:
     test_prediction = model.predict(X_test)
     accuracy = model.score(X_test, y_test)
 
-    return dict(model=model, accuracy=accuracy, test_prediction=test_prediction)
+    return dict(model=model, accuracy=accuracy, test_prediction=test_prediction, X_test=X_test,y_test=y_test)
 
 
 def train_iris_dataset_again() -> Dict:
