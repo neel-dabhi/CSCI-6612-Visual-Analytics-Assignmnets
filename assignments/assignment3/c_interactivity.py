@@ -362,7 +362,7 @@ def plotly_interactivity():
             value = value.update_traces({"visible": False})
             fig.add_trace(value.data[trace])
 
-    return None
+    return fig
 
 
 if __name__ == "__main__":

@@ -299,7 +299,7 @@ def dash_task():
                 ], className="invisible"),
 
                 html.Div([
-                    dbc.Alert('Click on visualization to change me :)', id='click-data', color="primary",
+                    dbc.Alert( id='click-data', color="primary",
                               style={"display": "inline-block"}),
                 ], className='columns'),
                 dbc.Card([
@@ -327,16 +327,25 @@ def dash_task():
     @app.callback(
         Output('click-data', 'children'),
         [Input('vis-dropdown', 'value'),
-         Input('second-visualization', 'selectedData'), Input('second-visualization', 'clickedData')])
-    def display_click_data(vis_value, selected, clicked):
+         Input('second-visualization', 'selectedData')])
+    def display_click_data(vis_value, selected):
         if vis_value == 'map':
-            return "Number of data selected is " + str(len(selected['points']))
+            if selected == None:
+                return " Select on visualization to change me :)"
+            else:
+                return "Number of data selected is " + str(len(selected['points']))
 
         if vis_value == 'tree-map':
-            return "Selected data is only supported in visualization with select tool"
+            if selected == None:
+                return " Select on visualization to change me :)"
+            else:
+                return "Selected data is only supported in visualization with select tool"
 
         if vis_value == 'polar-scatter':
-            return "Number of data selected is " + str(len(selected['points']))
+            if selected == None:
+                return " Select on visualization to change me :)"
+            else:
+                return "Number of data selected is " + str(len(selected['points']))
 
     @app.callback(
         Output('colx-dropdown', 'options'),

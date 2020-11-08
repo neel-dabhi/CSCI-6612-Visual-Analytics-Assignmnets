@@ -177,7 +177,6 @@ def matplotlib_table(matrix: np.array) -> Tuple:
         colColours=["cyan"] * 10,
         cellLoc='center',
         loc='upper left')
-
     return fig, ax
 
 
@@ -193,7 +192,6 @@ def matplotlib_composite_line_bar(x: np.array) -> Tuple:
     fig = plt.figure()
     ax = fig.add_axes(df[0].plot(kind='bar', width=0.3))
     df[0].plot(secondary_y=True, xlim=ax.get_xlim())
-
     return fig, ax
 
 
