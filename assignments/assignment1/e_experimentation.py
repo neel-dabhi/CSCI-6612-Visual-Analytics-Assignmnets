@@ -50,6 +50,7 @@ def process_iris_dataset() -> pd.DataFrame:
         distances[str(nc_combination)] = calculate_numeric_distance(df.loc[:, nc_combination[0]],
                                                                     df.loc[:, nc_combination[1]],
                                                                     DistanceMetric.EUCLIDEAN).values
+
     df['numeric_mean'] = distances.mean(axis=1)
 
     for cc in categorical_columns:
@@ -73,7 +74,32 @@ def process_iris_dataset_again() -> pd.DataFrame:
     saying whether the row's sepal_length is larger (true) or not (false) than 5.0
     :return: A dataframe with the above conditions.
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'iris.csv'))
+    numeric_columns = get_numeric_columns(df)
+    categorical_columns = get_text_categorical_columns(df)
+
+    # Filling wrong values with mean
+    df.loc[df['petal_width'] > 1.0, 'petal_width'] = df['petal_width'].mean()
+    df.loc[df['petal_width'] < 0.0, 'petal_width'] = df['petal_width'].mean()
+
+    # Assigning binary col conditionally before the normalization
+    # happens as normalization will bring values between 0 & 1
+    df['large_sepal_lenght'] = df["sepal_length"] > 5.0
+
+
+    # Fixing data before normalization as we need scaled data
+    for nc in numeric_columns:
+        df = fix_nans(df, nc)
+        df.loc[:, nc] = normalize_column(df.loc[:, nc])
+
+
+    # # Label Encoding
+    # for cc in categorical_columns:
+    #     le = generate_label_encoder(df.loc[:, cc])
+    #     df = replace_with_label_encoder(df, cc, le)
+
+    return df
 
 
 def process_amazon_video_game_dataset():
@@ -86,7 +112,24 @@ def process_amazon_video_game_dataset():
         and the average rating (as the "review" column).
     :return: A dataframe with the above conditions. The columns at the end should be: asin,review,time,count
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'ratings_Video_Games.csv'))
+
+    # 1  The rating has to be between 1.0 and 5.0
+    df = df[df['review'].between(1, 5)]
+
+    # 2 Time should be converted from milliseconds to datetime.datetime format
+    df['time'] = pd.to_datetime(df['time'], unit='ms')
+
+    """
+    # 3 Group by asin, counting non zero as review is between 1 and 5, 
+        taken the latest time as it gives when user last rated any product 
+    """
+    review_counts = df.groupby(by='asin', as_index=False).agg(
+        {'user': np.count_nonzero, 'review': np.mean, 'time': np.max})
+    review_counts = review_counts.rename(columns={'user': 'count'})
+
+    return review_counts
 
 
 def process_amazon_video_game_dataset_again():
@@ -98,7 +141,25 @@ def process_amazon_video_game_dataset_again():
         and a statistical analysis of each user (average, median, std, etc..., each as its own row)
     :return: A dataframe with the above conditions.
     """
-    pass
+
+    df = read_dataset(Path('..', '..', 'ratings_Video_Games.csv'))
+
+    # 1  The rating has to be between 1.0 and 5.0
+    df = df.drop(df[(df['review'] < 1.0) & (df['review'] > 5.0)].index)
+
+    # 2 Time should be converted from milliseconds to datetime.datetime format
+    df['time'] = pd.to_datetime(df['time'], unit='ms')
+
+    """
+    3.1 asin : Grouping by user and counting asin value to get number of reviews
+    3.2 review : Counting number of reviews, review mean, review median, review std from column review 
+    3.3 time : min shows users first review, max shows users last review
+    """
+    # df = df.groupby(by='user', as_index=False) \
+    #     .agg({'asin': np.count_nonzero,
+    #           'review': ['count', np.mean, np.median, np.std], 'time': [np.min, np.max]}).fillna(0)
+
+    return df
 
 
 def process_life_expectancy_dataset():
@@ -115,7 +176,65 @@ def process_life_expectancy_dataset():
     7. Change the continent column to a one_hot_encoder version of it
     :return: A dataframe with the above conditions.
     """
-    pass
+    df = read_dataset(Path('..', '..', 'life_expectancy_years.csv'))
+
+    df = df.T
+    # removing the country if more than 50% of it's data is nan, it is better to just remove the data then replacing
+    # it with mean or any other value.
+    df = df.loc[:, df.isnull().mean() < .5]
+    df.reset_index(level=0, inplace=True)
+
+    # considering zeroth row as header after transposing
+    new_header = df.iloc[0]
+    df = df[1:]
+    df.reset_index(level=0, inplace=True)
+    x = ['index']
+    x.extend(new_header)
+    df.columns = x
+
+    # handling outliers before moving further
+    numeric_columns = get_numeric_columns(df)
+    for nc in numeric_columns:
+        df = fix_outliers(df, nc)
+
+    # Making sure that we are reading csv in UTF-8 format
+    df_geo = pd.read_csv('../../geography.csv', encoding='utf-8')
+    df_geo = df_geo.rename(columns={'name': 'country'})
+
+    # Handling outliers and nans before joining Geo Data with life expectancy
+    text_categorical_columns = get_text_categorical_columns(df_geo)
+    for tcc in text_categorical_columns:
+        df_geo = fix_outliers(df_geo, tcc)
+        df_geo = fix_nans(df_geo, tcc)
+
+    # melting life expectancy data
+    df = df.drop(['index'], axis=1)
+    df1 = pd.melt(df, id_vars=['country'])
+    df1 = df1.rename(columns={'country': 'year', 'variable': 'country'})
+
+    # merging two dataframes : df_geo(with geographic data) and df(life_expectancy_data)
+    df_merged = pd.merge(left=df1, right=df_geo, left_on='country', right_on='country')
+
+    # Dropping all columns except country, continent, year, value and latitude
+    # eight_regions as continent because it gives more accurate position of country on the globe
+    df_merged = df_merged[['country', 'value', 'eight_regions', 'year', 'Latitude', ]]
+    df_merged = df_merged.rename(columns={'eight_regions': 'continent'})
+
+    # Changing the latitude column from numerical to categorical
+    # if the latitude value is positive country is in north hemisphere, else in south hemisphere
+    df_merged["Latitude"] = np.where(df_merged['Latitude'] >= 0, 'north', 'south')
+
+    # label encoding of Latitude
+    le = generate_label_encoder(df_merged['Latitude'])
+    df_le_encoded = replace_with_label_encoder(df_merged, 'Latitude', le)
+
+    # one hot encoding of continent
+    ohe = generate_one_hot_encoder(df_merged['continent'])
+    df_oh_encoded = replace_with_one_hot_encoder(df_le_encoded, 'continent', ohe, list(ohe.get_feature_names()))
+
+    df_oh_encoded['value'] = pd.to_numeric(df_oh_encoded['value'])
+
+    return df_oh_encoded
 
 
 if __name__ == "__main__":

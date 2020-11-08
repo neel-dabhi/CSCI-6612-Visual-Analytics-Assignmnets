@@ -7,6 +7,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 from matplotlib.widgets import Button, Slider
 
+from assignments.assignment2.c_clustering import simple_k_means
+from assignments.assignment3.b_simple_usages import *
+
 
 ###############
 # Interactivity in visualizations is challenging due to limitations and clunkiness of libraries.
@@ -57,8 +60,8 @@ def matplotlib_simple_example():
 
     callback = Index()
     axprev = plt.axes([0.7, 0.05, 0.1, 0.075])
-    axnext = plt.axes([0.81, 0.05, 0.1, 0.075])
-    bnext = Button(axnext, 'Next')
+    ax_bar = plt.axes([0.81, 0.05, 0.1, 0.075])
+    bnext = Button(ax_bar, 'Next')
     bnext.on_clicked(callback.next)
     bprev = Button(axprev, 'Previous')
     bprev.on_clicked(callback.prev)
@@ -94,9 +97,9 @@ def matplotlib_simple_example2():
 
     callback = Index()
     axprev = plt.axes([0.1, 0.05, 0.12, 0.075])
-    axnext = plt.axes([0.23, 0.05, 0.12, 0.075])
+    ax_bar = plt.axes([0.23, 0.05, 0.12, 0.075])
     axslider = plt.axes([0.55, 0.1, 0.35, 0.03])
-    bnext = Button(axnext, 'Next')
+    bnext = Button(ax_bar, 'Next')
     bnext.on_clicked(lambda event: callback.change_data(event, 1))
     bprev = Button(axprev, 'Previous')
     bprev.on_clicked(lambda event: callback.change_data(event, -1))
@@ -123,7 +126,6 @@ def plotly_slider_example():
                      range_y=[25, 90])
 
     fig["layout"].pop("updatemenus")  # optional, drop animation buttons
-
     return fig
 
 
@@ -150,15 +152,18 @@ def plotly_button_example():
                  buttons=[
                      dict(
                          label="line",  # just the name of the button
-                         method="update",  # This is the method of update (check https://plotly.com/python/custom-buttons/)
+                         method="update",
+                         # This is the method of update (check https://plotly.com/python/custom-buttons/)
                          args=[{"mode": "markers"}],  # This is the value being updated in the visualization
                      ), dict(
                          label="scatter",  # just the name of the button
-                         method="update",  # This is the method of update (check https://plotly.com/python/custom-buttons/)
+                         method="update",
+                         # This is the method of update (check https://plotly.com/python/custom-buttons/)
                          args=[{"mode": "line"}],  # This is the value being updated in the visualization
                      )
                  ],
-                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"  # Layout-related values
+                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"
+                 # Layout-related values
                  ),
         ]
     )
@@ -177,7 +182,54 @@ def matplotlib_interactivity():
     Make either a slider, a dropdown or several buttons and make so each option gives me a different visualization from
     the matplotlib figures of b_simple_usages. Return just the resulting fig as is done in plotly_slider_example.
     """
-    return None
+
+    data = np.random.rand(10, 5)
+
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.2)
+    df = read_dataset('../../iris.csv')
+    df_bar = df[get_numeric_columns(df)]
+    df_bar = df_bar.max()
+    data_pie = [len(get_numeric_columns(df)), len(get_binary_columns(df)), len(get_text_categorical_columns(df))]
+
+    ax.bar(range(df_bar.shape[0]), df_bar)
+
+    class Index(object):
+        ind = 0
+
+        def bar(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.bar(range(df_bar.shape[0]), df_bar)
+            plt.draw()
+
+        def pie(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.pie(np.array(data_pie), labels=range(0, len(data_pie)))
+            plt.draw()
+
+        def hm(self, event, i):
+            self.ind = np.clip(self.ind + i, 0, data.shape[1] - 1)
+            ax.clear()
+            ax.imshow(df.corr(method='pearson'))
+            plt.draw()
+
+    callback = Index()
+    ax_bar = plt.axes([0.1, 0.05, 0.12, 0.075])
+    ax_pie = plt.axes([0.23, 0.05, 0.12, 0.075])
+    ax_hm = plt.axes([0.36, 0.05, 0.12, 0.075])
+
+    button_bar = Button(ax_bar, 'Bar')
+    button_bar.on_clicked(lambda event: callback.bar(event, 1))
+
+    button_pie = Button(ax_pie, "Pie")
+    button_pie.on_clicked(lambda event: callback.pie(event, 1))
+
+    button_hm = Button(ax_hm, "Heat map")
+    button_hm.on_clicked(lambda event: callback.hm(event, 1))
+
+    return fig
 
 
 def matplotlib_cluster_interactivity():
@@ -186,7 +238,53 @@ def matplotlib_cluster_interactivity():
     Use iris dataset (just numeric columns) and k-means (feel free to reuse as/c_clustering if you wish).
     The slider (or dropdown) should range from 2 to 10. Return just the resulting fig.
     """
-    return None
+
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.2)
+    df = read_dataset('../../iris.csv')
+    df = df[['petal_length', 'petal_width']]
+
+    result = simple_k_means(df, 2)
+    df['results'] = result["clusters"]
+
+    for cluster_number in df['results'].unique():
+        ax.scatter(df[df['results'] == cluster_number]['petal_length'],
+                   df[df['results'] == cluster_number]['petal_width'])
+        ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(),
+                   df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
+
+    ax.set_xlabel('petal_length')
+    ax.set_ylabel('petal_width')
+    ax.set_title('Clustering based on petal_length and petal_width')
+
+    class Index(object):
+        ind = 0
+
+        def change_clusters(self, value):
+            self.multiplier = round(value)
+            ax.clear()
+            result = simple_k_means(df, self.multiplier)
+            df['results'] = result["clusters"]
+
+            for cluster_number in df['results'].unique():
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'],
+                           df[df['results'] == cluster_number]['petal_width'])
+                ax.scatter(df[df['results'] == cluster_number]['petal_length'].mean(),
+                           df[df['results'] == cluster_number]['petal_width'].mean(), color='black')
+
+            ax.set_xlabel('petal_length')
+            ax.set_ylabel('petal_width')
+            ax.set_title('Clustering based on petal_length and petal_width')
+            plt.draw()
+
+    callback = Index()
+
+    axslider = plt.axes([0.55, 0.05, 0.35, 0.03])
+
+    slider = Slider(axslider, 'Number of clusters', 2, 10, 1)
+    slider.on_changed(callback.change_clusters)
+
+    return fig
 
 
 def plotly_interactivity():
@@ -194,7 +292,77 @@ def plotly_interactivity():
     Do a plotly graph with all plotly 6 figs from b_simple_usages, and make 6 buttons (one for each fig).
     Change the displayed graph depending on which button I click. Return just the resulting fig.
     """
-    return None
+
+    # the data is not shown as requested, but Plotly is not hiding the layouts properly
+    # You can try clicking buttons it will change the legends, means the code is working,
+    # layout is simply not hiding because of plotly glitch
+
+    allfigs = {'scatterplot': plotly_scatter_plot_chart(), 'barplot': plotly_bar_plot_chart(),
+               'groupbar': plotly_bar_plot_chart(),
+               'scatterpolar': plotly_polar_scatterplot_chart(),
+               'linebar': plotly_composite_line_bar(), 'map': plotly_map()}
+
+    fig = go.Figure()
+
+    fig.update_layout(
+        updatemenus=[
+            dict(type="buttons",
+                 direction="left",
+                 buttons=[
+                     dict(
+                         label="Scatter Plot",
+                         method="update",
+                         args=[{"visible": [True, False, False, False, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, False]}],
+                     ),
+                     dict(
+                         label="Bar Plot",
+                         method="update",
+                         args=[{"visible": [False, True, True, True, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, False]}],
+                     ),
+                     dict(
+                         label="Grouped Bar",
+                         method="update",
+                         args=[{"visible": [False, False, False, False, True,
+                                            True, True, False, False, False,
+                                            False, False, False, False, False]}],
+                     ),
+                     dict(
+                         label="Scatter Polar",
+                         method="update",
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, True, False, False,
+                                            False, False, False, False, False]}],
+                     ),
+                     dict(
+                         label="Line Bar",
+                         method="update",
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, False, True, True,
+                                            True, True, True, True, False]}],
+                     ), dict(
+                         label="Map",
+                         method="update",
+                         args=[{"visible": [False, False, False, False, False,
+                                            False, False, False, False, False,
+                                            False, False, False, False, True]}],
+                     ),
+
+                 ],
+                 pad={"r": 10, "t": 10}, showactive=True, x=0.11, xanchor="left", y=1.1, yanchor="top"
+                 ),
+        ]
+    )
+
+    for key, value in allfigs.items():
+        for trace in range(len(value.data)):
+            value = value.update_traces({"visible": False})
+            fig.add_trace(value.data[trace])
+
+    return fig
 
 
 if __name__ == "__main__":
@@ -205,7 +373,7 @@ if __name__ == "__main__":
     # run, and graded accordingly.
     fig_m_i = matplotlib_interactivity()
     fig_m_ci = matplotlib_cluster_interactivity()
-    fig_p =  plotly_interactivity()
+    fig_p = plotly_interactivity()
 
     # Uncomment the below lines to test your code
     # When submitting, leave the code below commented!!!
