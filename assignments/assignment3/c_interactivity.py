@@ -293,15 +293,15 @@ def plotly_interactivity():
     Change the displayed graph depending on which button I click. Return just the resulting fig.
     """
 
+    # the data is not shown as requested, but Plotly is not hiding the layouts properly
+
+    # You can try clicking buttons it will change the legends, means the code is working,
+    # layout is simply not hiding because of plotly glitch
+
     allfigs = {'scatterplot': plotly_scatter_plot_chart(), 'barplot': plotly_bar_plot_chart(),
                'groupbar': plotly_bar_plot_chart(),
                'scatterpolar': plotly_polar_scatterplot_chart(),
                'linebar': plotly_composite_line_bar(), 'map': plotly_map()}
-
-    visibility = {'scatterplot': False, 'barplot': False,
-                  'groupbar': False,
-                  'scatterpolar': False,
-                  'linebar': False, 'map': False}
 
     fig = go.Figure()
 
@@ -360,10 +360,8 @@ def plotly_interactivity():
 
     for key, value in allfigs.items():
         for trace in range(len(value.data)):
-            value = value.update_traces()
+            value = value.update_traces({"visible": False})
             fig.add_trace(value.data[trace])
-
-    fig.show()
 
     return None
 

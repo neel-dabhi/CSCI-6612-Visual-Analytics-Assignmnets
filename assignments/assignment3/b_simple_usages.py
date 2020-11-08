@@ -42,9 +42,11 @@ def matplotlib_bar_chart() -> Tuple:
     # There wont be legends and titles as I am reusing the code in this file.
     # I have confirmed this with leonardo
     df = read_dataset('../../iris.csv')
-    df = df[get_numeric_columns(df)]
-    df = df.max()
-    fig, ax = matplotlib_bar_chart_a(df)
+    df_max = df[get_numeric_columns(df)].max()
+
+    fig, ax = plt.subplots()
+    ax.bar(np.arange(4), df_max.values)
+    plt.xticks(np.arange(4), df_max.keys())
     return fig, ax
 
 
@@ -55,7 +57,9 @@ def matplotlib_pie_chart() -> Tuple:
     """
     df = process_life_expectancy_dataset()
     data = [len(get_numeric_columns(df)), len(get_binary_columns(df)), len(get_text_categorical_columns(df))]
-    return matplotlib_pie_chart_a(np.array(data))
+    fig, ax = plt.subplots()
+    ax.pie(data, labels=['numeric', 'binary', 'categorical'])
+    return fig, ax
 
 
 def matplotlib_histogram() -> Tuple:
@@ -192,14 +196,31 @@ def plotly_polar_scatterplot_chart():
               'Latitude': 'first', 'Longitude': 'first', 'value': np.mean}).fillna(0)
 
     # converting lat long to theta
-
+    # https://towardsdatascience.com/calculating-the-bearing-between-two-geospatial-coordinates-66203f57e4b4
     X = np.cos(df_merged['Latitude']) * np.sin(df_merged['Longitude'])
     Y = np.cos(0) * np.sin(df_merged['Latitude']) - np.sin(0) * np.cos(df_merged['Latitude']) * np.cos(
         df_merged['Longitude'])
 
+    label = {'20': 'N', '40': 'NNE', '60': 'NE', '80': 'ENE', '100': 'E', '120': 'ESE', '140': 'SE', '160': '180',
+             '200': 'S', '220': 'SSW', '240': 'SW',
+             '260': 'WSW', '280': 'W', '300': 'WNW', '320': 'NW', '340': 'NNW'}
+
+    directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+    degrees = np.linspace(0, 360, 17)
+
     df_merged['bearing'] = abs(np.degrees((np.arctan2(X, Y)) + 360) % 360)
 
-    fig = px.scatter_polar(df_merged, r='value', theta='bearing', )
+    df_merged['dir'] = pd.cut(df_merged['bearing'], bins=degrees, labels=directions)
+
+    # fig = go.Figure(data=
+    # go.Scatterpolar(
+    #     r=df_merged['value'],
+    #     theta=df_merged['bearing'],
+    #     mode='markers',
+    #     label=label
+    # ))
+    df_merged = df_merged.sort_values(by='bearing')
+    fig = px.scatter_polar(df_merged, r=df_merged['value'], theta=df_merged['dir'])
     return fig
 
 
@@ -208,11 +229,15 @@ def plotly_table():
     Show the data from a2/a_classification/your_choice() as a table
     See https://plotly.com/python/table/ for documentation
     """
+
     results = your_choice_a()
-    fig = go.Figure(data=[go.Table(header=dict(values=['X_test', 'y_test', 'test_prediction']),
-                                   cells=dict(
-                                       values=[results['X_test'], results['y_test'], results['test_prediction']]))])
-    fig.show()
+    fig = go.Figure(
+        data=[
+            go.Table(header=dict(values=['UN member since (years)', 'differance in LE ', 'region', 'test_prediction']),
+                     cells=dict(
+                         values=[results['X_test']['UN member since'], results['X_test']['diff'],
+                                 results['y_test'], results['test_prediction']]))])
+
     return fig
 
 

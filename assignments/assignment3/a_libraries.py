@@ -104,9 +104,8 @@ def matplotlib_bar_chart(x: np.array) -> Tuple:
     Create a matplotlib bar chart with the inputs. DO NOT PLOT IT!!
     Return the fig and ax as was shown in matplotlib_line_example.
     """
-    fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1])
-    ax.bar(range(len(x)), x,)
+    fig, ax = plt.subplots()
+    ax = ax.bar(range(len(x)), x,)
     return fig, ax
 
 
@@ -117,7 +116,7 @@ def matplotlib_pie_chart(x: np.array) -> Tuple:
     """
     fig = plt.figure()
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.pie(abs(x), labels=range(0, len(x)))
+    ax.pie(abs(x), labels=x.round(2))
     return fig, ax
 
 
@@ -193,6 +192,7 @@ def matplotlib_composite_line_bar(x: np.array) -> Tuple:
     fig = plt.figure()
     ax = fig.add_axes(df[0].plot(kind='bar', width=0.3))
     df[0].plot(secondary_y=True, xlim=ax.get_xlim())
+
     return fig, ax
 
 
@@ -296,10 +296,9 @@ def plotly_contour_chart(df: pd.DataFrame):
     Return the fig only.
     """
     fig = go.Figure(data=
-                    go.Contour(z=df.iloc[:, 0],
-                               x=df.iloc[:, 1],
-                               y=df.iloc[:, 2]
-                               ))
+                    go.Contour(z=df,
+                               x=df.columns,
+                               y=df.index, ))
     return fig
 
 
@@ -313,7 +312,7 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     fig = go.Figure()
     df_sorted = df.sort_values(by=['x', 'y'])
     fig.add_trace(go.Scatter(x=df_sorted['x'], y=df_sorted['y']))
-    fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.008))
+    fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.009))
     return fig
 
 
@@ -337,11 +336,12 @@ def plotly_subgraphs(df: pd.DataFrame):
     fig.add_trace(go.Bar(x=df['x3'].index, y=df['x3'], name='Bar'), row=1, col=2)
 
     df_sorted_area = df.sort_values(by=['x4', 'y4'])
-    fig.add_trace(go.Scatter(x=df_sorted_area['x4'], y=df_sorted_area['y4'], mode='lines', fill='tozeroy', name='Area'),
+    fig.add_trace(go.Scatter(y=df_sorted_area['y4'], mode='lines', fill='tozeroy', name='Area'),
+                  row=2, col=2)
+    fig.add_trace(go.Scatter(y=df_sorted_area['x4'], mode='lines', fill='tonexty', name='Area'),
                   row=2, col=2)
 
-    fig.update_layout(height=500, width=700,
-                      title_text="Multiple Subplots with Titles")
+    fig.update_layout(title_text="Multiple Subplots with Titles")
 
     return fig
 

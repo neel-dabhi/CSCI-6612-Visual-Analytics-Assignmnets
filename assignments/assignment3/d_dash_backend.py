@@ -186,7 +186,7 @@ def dash_task():
                         [
                             dbc.Col(html.Img(src="https://images.plot.ly/logo/new-branding/plotly-logomark.png",
                                              height="30px")),
-                            dbc.Col(dbc.NavbarBrand("MyDash", className="font-weight-bold", style={})),
+                            dbc.Col(dbc.NavbarBrand("Tableau de bord", className="", style={'font-size': '1.5em'})),
                         ],
                         align="center",
                         no_gutters=True,
@@ -314,7 +314,7 @@ def dash_task():
     @app.callback(
         Output('second-visualization', 'figure'),
         [Input('vis-dropdown', 'value')])
-    def set_cities_value(vis_value):
+    def set_visulization_value(vis_value):
         if vis_value == 'map':
             return plotly_map()
 
@@ -326,18 +326,17 @@ def dash_task():
 
     @app.callback(
         Output('click-data', 'children'),
-        [Input('second-visualization', 'clickData'), Input('vis-dropdown', 'value')])
-    def display_click_data(clickData, vis_value):
+        [Input('vis-dropdown', 'value'),
+         Input('second-visualization', 'selectedData'), Input('second-visualization', 'clickedData')])
+    def display_click_data(vis_value, selected, clicked):
         if vis_value == 'map':
-            return "Life Expectancy value of " + str(clickData['points'][0]['location']) + " is " + str(
-                clickData['points'][0]['z'])
+            return "Number of data selected is " + str(len(selected['points']))
 
         if vis_value == 'tree-map':
-            return "Level: " + str(clickData['points'][0]['label'])
+            return "Selected data is only supported in visualization with select tool"
 
         if vis_value == 'polar-scatter':
-            return "Theta: " + str(round(clickData['points'][0]['theta'], 3)) + " and Value: " + str(
-                round(clickData['points'][0]['r'], 3))
+            return "Number of data selected is " + str(len(selected['points']))
 
     @app.callback(
         Output('colx-dropdown', 'options'),
