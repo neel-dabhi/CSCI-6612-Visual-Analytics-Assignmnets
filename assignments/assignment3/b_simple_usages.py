@@ -33,14 +33,15 @@ from assignments.assignment3.a_libraries import matplotlib_bar_chart as matplotl
     matplotlib_pie_chart as matplotlib_pie_chart_a, \
     matplotlib_heatmap_chart as matplotlib_heatmap_chart_a, plotly_polar_chart as plotly_polar_chart_a
 
+# There wont be legends and titles as I am reusing the code in this file.
+# I have confirmed this with leonardo
 
 def matplotlib_bar_chart() -> Tuple:
     """
     Create a bar chart with a1/b_data_profile's get column max.
     Show the max of each numeric column from iris dataset as the bars
     """
-    # There wont be legends and titles as I am reusing the code in this file.
-    # I have confirmed this with leonardo
+
     df = read_dataset('../../iris.csv')
     df_max = df[get_numeric_columns(df)].max()
 
@@ -123,6 +124,8 @@ def plotly_bar_plot_chart():
     clustering_iris = cluster_iris_dataset_again()
     df = read_dataset('../../iris.csv')
     df['clusters'] = pd.Series(clustering_iris['clusters'])
+
+    # Removing outliers from the given cluster
     df = df.loc[df['clusters'] > -1]
 
     species = ['cluster 0', 'cluster 1', 'cluster 2']
@@ -195,30 +198,20 @@ def plotly_polar_scatterplot_chart():
         .agg({'year': np.sum,
               'Latitude': 'first', 'Longitude': 'first', 'value': np.mean}).fillna(0)
 
-    # converting lat long to theta
+    # converting lat long to theta by calculating bearing with reference to 0,0
     # https://towardsdatascience.com/calculating-the-bearing-between-two-geospatial-coordinates-66203f57e4b4
     X = np.cos(df_merged['Latitude']) * np.sin(df_merged['Longitude'])
     Y = np.cos(0) * np.sin(df_merged['Latitude']) - np.sin(0) * np.cos(df_merged['Latitude']) * np.cos(
         df_merged['Longitude'])
 
-    label = {'20': 'N', '40': 'NNE', '60': 'NE', '80': 'ENE', '100': 'E', '120': 'ESE', '140': 'SE', '160': '180',
-             '200': 'S', '220': 'SSW', '240': 'SW',
-             '260': 'WSW', '280': 'W', '300': 'WNW', '320': 'NW', '340': 'NNW'}
 
     directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
     degrees = np.linspace(0, 360, 17)
 
+    # converting bearing into degrees in range 0 to 360
     df_merged['bearing'] = abs(np.degrees((np.arctan2(X, Y)) + 360) % 360)
-
     df_merged['dir'] = pd.cut(df_merged['bearing'], bins=degrees, labels=directions)
 
-    # fig = go.Figure(data=
-    # go.Scatterpolar(
-    #     r=df_merged['value'],
-    #     theta=df_merged['bearing'],
-    #     mode='markers',
-    #     label=label
-    # ))
     df_merged = df_merged.sort_values(by='bearing')
     fig = px.scatter_polar(df_merged, r=df_merged['value'], theta=df_merged['dir'])
     return fig
