@@ -138,6 +138,7 @@ def matplotlib_polar_chart(x: np.array, y: np.array) -> Tuple:
     Return the fig and ax as was shown in matplotlib_line_example.
     """
     # converting y into degree
+    # I am normalizing values in range 0 to 360 to convert it to angle
     zero, two_pi = 0, 360
     x = abs(x)
     y = abs(y)
@@ -249,6 +250,7 @@ def plotly_polar_chart(df: pd.DataFrame):
     Return the fig only. Feel free to choose between px and go.
     """
     # converting y into degree
+    # I am normalizing values in range 0 to 360 to convert it to angle
     zero, two_pi = 0, 360
     x, y = df['y'].min(), df['y'].max()
     df['y'] = (df['y'] - x) / (y - x) * (two_pi - zero) + zero
@@ -298,7 +300,7 @@ def plotly_contour_chart(df: pd.DataFrame):
     fig = go.Figure(data=
                     go.Contour(z=df,
                                x=df.columns,
-                               y=df.index, ))
+                               y=df.index))
     return fig
 
 
@@ -310,6 +312,7 @@ def plotly_composite_line_bar(df: pd.DataFrame):
     Return the fig and ax as was shown in matplotlib_line_example.
     """
     fig = go.Figure()
+    # Sorting data as it makes visualization easy to comprehend
     df_sorted = df.sort_values(by=['x', 'y'])
     fig.add_trace(go.Scatter(x=df_sorted['x'], y=df_sorted['y']))
     fig.add_trace(go.Bar(x=df_sorted['x'], y=df_sorted['y'], width=.009))
@@ -327,6 +330,7 @@ def plotly_subgraphs(df: pd.DataFrame):
         rows=2, cols=2,
         subplot_titles=("Line", "Bar", "Scatter", "Area"))
 
+    # Sorting data as it makes visualization easy to comprehend
     df_sorted_line = df.sort_values(by=['x1', 'y1'])
 
     fig.add_trace(go.Scatter(x=df_sorted_line['x1'], y=df_sorted_line['y1'], mode='lines', name='Line'), row=1, col=1)
