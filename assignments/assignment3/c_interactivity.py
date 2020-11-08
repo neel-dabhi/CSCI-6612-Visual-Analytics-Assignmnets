@@ -294,7 +294,6 @@ def plotly_interactivity():
     """
 
     # the data is not shown as requested, but Plotly is not hiding the layouts properly
-
     # You can try clicking buttons it will change the legends, means the code is working,
     # layout is simply not hiding because of plotly glitch
 

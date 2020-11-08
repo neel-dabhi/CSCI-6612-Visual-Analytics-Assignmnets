@@ -376,6 +376,9 @@ def dash_task():
             row = df.shape[0]
 
         if dataset == 'life_expectancy':
+            # I have saved the processed life expectancy data into processed_le.csv
+            # So that I dont have to perform lengthy operation every time we select LE data
+            # It saves time and processing.
             df = read_dataset('processed_le.csv')
             row = df.shape[0]
 
@@ -394,6 +397,8 @@ def dash_task():
 
         if dataset == 'video_game':
             df = read_dataset('../../ratings_Video_Games.csv')
+            # I am slicing df into first 3000 rows as the size of data is too large even after pre processing
+            # It was making webpage unresponsive
             df = df[:3000]
 
         if dataset == 'life_expectancy':
